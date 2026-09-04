@@ -636,6 +636,7 @@ html:active-view-transition footer {
   font-size: 0.85em;
   color: rgb(var(--color-muted-dark));
   text-decoration: none;
+  white-space: nowrap; /* never leave a dangling '#' on its own line */
 }
 .sty-prose h2:hover .anchor-link,
 .sty-prose h3:hover .anchor-link,
@@ -723,8 +724,13 @@ html:active-view-transition footer {
   padding: 0.14rem 0.4rem;
   border-radius: 0.375rem;
   color: rgb(var(--color-fg));
+  /* Keep code tokens intact: never break mid-token on normal wrapping.
+     word-break: break-word is deliberately NOT used - WebKit treats it
+     like break-all and chops every identifier across lines. A single
+     pathological token may still break at the line edge via
+     overflow-wrap, but only when it cannot fit on its own line. */
   overflow-wrap: break-word;
-  word-break: break-word;
+  hyphens: none;
 }
 
 /* fenced code blocks (kramdown + rouge) */
