@@ -1,8 +1,8 @@
 /*!
  * Stygian - docs theme engine (vanilla JS, no dependencies)
- * Modules: theme switch (clean crossfade, no ripple), mobile navigation
- * drawer, code copy buttons, table wrappers, heading anchors, lazy
- * Mermaid rendering.
+ * Modules: theme switch (circular reveal transition, no ripple), mobile
+ * navigation drawer, code copy buttons, table wrappers, heading anchors,
+ * lazy Mermaid rendering.
  */
 (function () {
   'use strict';
@@ -42,24 +42,35 @@
     moon.style.display = showSun ? 'none' : '';
   }
 
-  /* Theme swap with no decoration: no ripple, no expanding circle.
-     Uses the browser's default View Transition crossfade when available;
-     instant otherwise (or with reduced motion). */
-  function toggleTheme() {
+  /* Theme swap: circular reveal from the click point via View
+     Transitions. No post-transition ripple of any kind. */
+  function toggleTheme(originX, originY) {
     var current = getTheme();
     var next = current === 'dark' ? 'light' : 'dark';
 
     var applyTheme = function () { setTheme(next, true); };
+
+    // Circular reveal parameters (origin + radius as CSS variables).
+    var origin = {
+      x: typeof originX === 'number' ? originX : window.innerWidth / 2,
+      y: typeof originY === 'number' ? originY : 32
+    };
+    var revealRadius = Math.hypot(
+      Math.max(origin.x, window.innerWidth - origin.x),
+      Math.max(origin.y, window.innerHeight - origin.y)
+    );
+    root.style.setProperty('--theme-origin-x', origin.x + 'px');
+    root.style.setProperty('--theme-origin-y', origin.y + 'px');
+    root.style.setProperty('--theme-reveal-radius', revealRadius + 'px');
 
     if (reduceMotion() || typeof doc.startViewTransition !== 'function') {
       applyTheme();
       return;
     }
 
-    var transition = doc.startViewTransition(function () {
+    doc.startViewTransition(function () {
       applyTheme();
     });
-    /* No post-transition effects: the transition is left to finish. */
   }
 
   function initTheme() {
@@ -69,13 +80,15 @@
       if (cfg && cfg.theme && cfg.theme.transition === false) useTransition = false;
     } catch (e) { /* keep defaults */ }
     doc.querySelectorAll('.js-theme-toggle').forEach(function (btn) {
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', function (e) {
+        var x = e.clientX || e.pageX;
+        var y = e.clientY || e.pageY;
         if (!useTransition) {
           var current = getTheme();
           setTheme(current === 'dark' ? 'light' : 'dark', true);
           return;
         }
-        toggleTheme();
+        toggleTheme(x, y);
       });
     });
     updateToggleIcons(getTheme());

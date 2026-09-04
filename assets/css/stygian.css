@@ -154,12 +154,22 @@ html:active-view-transition footer {
 }
 
 /* --------------------------------------------------------------------------
-   3. Theme transition
-   --------------------------------------------------------------------------
-   No ripple, no expanding circle. The theme swap uses the browser's
-   default View Transition crossfade when available; with reduced motion
-   (or no View Transition API) it is instant.
+   3. Theme transition: circular reveal (no post-transition ripple)
    -------------------------------------------------------------------------- */
+
+@keyframes theme-reveal-wave {
+  0%   { clip-path: circle(0px at var(--theme-origin-x) var(--theme-origin-y)); }
+  100% { clip-path: circle(var(--theme-reveal-radius) at var(--theme-origin-x) var(--theme-origin-y)); }
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--theme-transition-duration, 700ms);
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  mix-blend-mode: normal;
+}
+::view-transition-old(root) { animation-name: none; }
+::view-transition-new(root) { animation-name: theme-reveal-wave; }
 
 /* --------------------------------------------------------------------------
    4. Header bar
