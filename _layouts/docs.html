@@ -1,0 +1,26 @@
+---
+# Docs - markdown page with sidebar navigation + prev/next (just-the-docs
+# style). One markdown file in your docs collection == one page here.
+layout: default
+---
+<div class="docs">
+  <aside class="docs__sidebar" id="sidebar" aria-label="Documentation navigation">
+    <div class="docs__sidebar-head">
+      <span class="docs__sidebar-title">{{ site.stygian.nav.title | default: 'Docs' }}</span>
+      <button type="button" class="docs__close js-nav-close" aria-label="Close navigation">×</button>
+    </div>
+    {% include nav-list.html %}
+  </aside>
+  <div class="docs__scrim js-nav-scrim" hidden></div>
+
+  <div class="docs__content">
+    <article>
+      <header class="docs__title">
+        <h1>{{ page.title }}</h1>
+        {% if page.lede %}<p class="lede">{{ page.lede }}</p>{% endif %}
+      </header>
+      <div class="sty-prose">{{ content }}</div>
+      {% include prev-next.html %}
+    </article>
+  </div>
+</div>

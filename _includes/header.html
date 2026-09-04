@@ -1,0 +1,31 @@
+{%- assign aux = site.stygian.header.aux_links | default: nil -%}
+<header class="site-header">
+  <div class="site-header__inner">
+    <div class="site-header__left">
+      {% if page.layout == 'docs' %}
+        <button type="button" class="nav-toggle js-nav-toggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="15" y2="18"/></svg>
+        </button>
+      {% endif %}
+      <a class="site-header__title" href="{{ site.baseurl }}/">
+        <span class="site-header__glyph" aria-hidden="true">01</span>
+        <span>{{ site.title | default: 'Stygian' }}</span>
+      </a>
+    </div>
+    <div class="site-header__right">
+      {% if aux %}
+        {% for link in aux %}
+          <a class="aux-link" href="{{ link.href }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+        {% endfor %}
+      {% endif %}
+      <button type="button"
+              class="theme-toggle js-theme-toggle"
+              aria-label="Switch color theme"
+              aria-pressed="false"
+              title="Toggle light / dark mode">
+        <svg class="js-theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+        <svg class="js-theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</header>

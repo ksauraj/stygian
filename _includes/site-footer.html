@@ -1,0 +1,11 @@
+{%- assign note = site.stygian.footer.note | default: site.title | default: 'Stygian' -%}
+{%- assign right = site.stygian.footer.right | default: '' -%}
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <p class="mono-xs">{{ note }}</p>
+    {% if right != '' %}
+      <p class="mono-xs">{{ right }}</p>
+    {% endif %}
+    <a class="mono-xs site-footer__top" href="#top">[ ↑ back to top ]</a>
+  </div>
+</footer>

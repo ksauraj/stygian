@@ -1,0 +1,81 @@
+# ---------------------------------------------------------------------------
+# Stygian - built-in demo site (docs-engine showcase)
+# ---------------------------------------------------------------------------
+# This repo is itself a working Jekyll site so the theme's markdown rendering
+# can be previewed live. The site you are looking at is just a set of sample
+# .md files under /_docs - the theme only provides the engine.
+# ---------------------------------------------------------------------------
+
+title: Stygian
+tagline: A modern docs theme for Jekyll & GitHub Pages.
+description: >-
+  Stygian is a modern, just-the-docs-style Jekyll theme for GitHub Pages
+  documentation. Render markdown collections with sidebar navigation,
+  prev/next browsing, dark & light themes and a binary-ripple theme
+  transition. No frameworks, plain CSS variables and vanilla JavaScript.
+
+url: "https://ksauraj.github.io"
+baseurl: "/stygian"
+
+theme: stygian
+
+# ------------------------------------------------------------------ build
+exclude:
+  - README.md
+  - LICENSE
+  - stygian.gemspec
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .github
+  - lib
+  - .gitignore
+  - .bundle
+
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  auto_ids: true
+  hard_wrap: false
+  syntax_highlighter: rouge
+  syntax_highlighter_opts:
+    block:
+      line_numbers: false
+
+# ------------------------------------------------------------------ content
+# The docs collection is what the theme renders: every markdown page here
+# gets a sidebar entry, a title header and prev/next navigation.
+# Drop your own markdown into a _docs/ folder in your site and it just works.
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/    # _docs/getting-started.md -> /docs/getting-started/
+
+defaults:
+  - scope:
+      path: ""
+      type: docs
+    values:
+      layout: docs
+  - scope:
+      path: ""
+      type: pages
+    values:
+      layout: page
+
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# ------------------------------------------------------------------ theme
+stygian:
+  header:
+    aux_links:
+      - { label: GitHub, href: https://github.com/ksauraj/stygian }
+  theme:
+    default: dark        # fallback before the visitor's saved choice
+    transition: true     # binary-ripple View Transition on theme switch
+  footer:
+    note: Stygian - a modern docs theme for Jekyll.
+    right: "© 2026 ksauraj · MIT licensed"

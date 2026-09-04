@@ -1,0 +1,55 @@
+{%- comment -%}
+Bottom "previous / next" navigation, flattened in navigation order:
+parents first (by nav_order), each followed immediately by its children.
+{%- endcomment -%}
+{%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+{%- assign all_docs = site[collection_name] | where_exp: 'item', 'item.nav_exclude != true' | sort: 'nav_order' -%}
+{%- assign flat = '' -%}
+{% for doc in all_docs %}
+  {%- assign doc_key = doc.path | split: '/' | last | remove: '.md' -%}
+  {%- if doc.parent == nil or doc.parent == '' -%}
+    {%- assign flat = flat | append: doc.url | append: ',' -%}
+    {%- for child in all_docs -%}
+      {%- if child.parent == doc_key -%}{%- assign flat = flat | append: child.url | append: ',' -%}{%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+{% endfor %}
+{%- assign urls = flat | split: ',' -%}
+{%- assign index = -1 -%}
+{%- for url in urls -%}
+  {%- if url == page.url -%}{%- assign index = forloop.index0 -%}{%- endif -%}
+{%- endfor -%}
+{%- if index >= 0 -%}
+  {%- assign prev_idx = index | minus: 1 -%}
+  {%- assign next_idx = index | plus: 1 -%}
+  {%- assign prev_url = nil -%}
+  {%- assign next_url = nil -%}
+  {%- for url in urls -%}
+    {%- if forloop.index0 == prev_idx -%}{%- assign prev_url = url -%}{%- endif -%}
+    {%- if forloop.index0 == next_idx -%}{%- assign next_url = url -%}{%- endif -%}
+  {%- endfor -%}
+  {%- assign prev_page = nil -%}
+  {%- assign next_page = nil -%}
+  {% for doc in all_docs %}
+    {%- if doc.url == prev_url -%}{%- assign prev_page = doc -%}{%- endif -%}
+    {%- if doc.url == next_url -%}{%- assign next_page = doc -%}{%- endif -%}
+  {% endfor %}
+  {% if prev_page or next_page %}
+    <nav class="prev-next" aria-label="Previous and next pages">
+      {% if prev_page %}
+        <a class="prev-next__item card-hover-glare" href="{{ prev_page.url | relative_url }}">
+          <span class="prev-next__dir">Previous</span>
+          <span class="prev-next__title">{{ prev_page.title }}</span>
+        </a>
+      {% else %}
+        <span></span>
+      {% endif %}
+      {% if next_page %}
+        <a class="prev-next__item card-hover-glare prev-next__item--next" href="{{ next_page.url | relative_url }}">
+          <span class="prev-next__dir">Next</span>
+          <span class="prev-next__title">{{ next_page.title }}</span>
+        </a>
+      {% endif %}
+    </nav>
+  {% endif %}
+{%- endif -%}

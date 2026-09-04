@@ -1,0 +1,14 @@
+---
+# Page - plain markdown page (no sidebar). Good for landing pages.
+layout: default
+---
+<div class="page-wrap">
+  <header class="page-head" data-page-title>
+    {% if page.label %}<div class="label"><span>{{ page.label }}</span></div>{% endif %}
+    <h1>{{ page.title }}</h1>
+    {% if page.lede %}<p class="lede">{{ page.lede }}</p>{% endif %}
+  </header>
+  <div class="sty-prose" data-page-content>
+    {{ content }}
+  </div>
+</div>

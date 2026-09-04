@@ -1,0 +1,15 @@
+---
+# Default chrome: <html>/<head>, header bar, main content, small footer.
+---
+<!DOCTYPE html>
+<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="{{ site.stygian.theme.default | default: 'dark' }}" class="no-js">
+  {% include head.html %}
+  <body id="top" class="bg-bg text-fg" data-sty-config='{"theme":{"transition":{{ site.stygian.theme.transition | default: "true" }}}}'>
+    <script>document.documentElement.classList.remove('no-js');</script>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {% include header.html %}
+    <main id="main">{{ content }}</main>
+    {% include site-footer.html %}
+    {% include scripts.html %}
+  </body>
+</html>

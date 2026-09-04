@@ -1,0 +1,36 @@
+{%- comment -%}
+Sidebar navigation for the docs collection (just-the-docs conventions):
+  - page order: front matter `nav_order` (lowest first), tie-broken by title
+  - nesting:  a page with `parent: <basename-of-parent>` renders nested under
+              that parent (one level); `nav_exclude: true` hides a page
+{%- endcomment -%}
+{%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+{%- assign all_docs = site[collection_name] | where_exp: 'item', 'item.nav_exclude != true' | sort: 'nav_order' -%}
+
+<nav class="docs__nav" aria-label="Sections">
+  <ul class="docs__nav-list">
+    {% for doc in all_docs %}
+      {%- assign doc_key = doc.path | split: '/' | last | remove: '.md' -%}
+      {%- if doc.parent == nil or doc.parent == '' -%}
+        {%- assign children = all_docs | where: 'parent', doc_key -%}
+        {%- assign has_active_child = false -%}
+        {%- if page.url == doc.url -%}{%- assign is_active = true -%}{%- else -%}{%- assign is_active = false -%}{%- endif -%}
+        {%- for child in children -%}
+          {%- if page.url == child.url -%}{%- assign has_active_child = true -%}{%- endif -%}
+        {%- endfor -%}
+        <li class="{% if is_active or has_active_child %}active{% endif %}">
+          <a href="{{ doc.url | relative_url }}"{% if is_active %} aria-current="page"{% endif %}>{{ doc.title }}</a>
+          {% if children.size > 0 %}
+            <ul class="docs__nav-list docs__nav-list--child">
+              {% for child in children %}
+                <li class="{% if page.url == child.url %}active{% endif %}">
+                  <a href="{{ child.url | relative_url }}"{% if page.url == child.url %} aria-current="page"{% endif %}>{{ child.title }}</a>
+                </li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+        </li>
+      {%- endif -%}
+    {% endfor %}
+  </ul>
+</nav>
