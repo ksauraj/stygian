@@ -7,7 +7,7 @@ lede: >
   dark/light themes with a binary-ripple transition. No frameworks, no
   build step, plain CSS variables and one vanilla JS file.
 ---
-[Getting started ->]({{ '/docs/getting-started/' | relative_url }}){: .btn }
+[Getting started]({{ '/docs/getting-started/' | relative_url }}){: .btn }
 [See it on GitHub](https://github.com/ksauraj/stygian){: .btn .btn--ghost }
 
 ## What you're looking at
