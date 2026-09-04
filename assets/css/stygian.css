@@ -154,68 +154,12 @@ html:active-view-transition footer {
 }
 
 /* --------------------------------------------------------------------------
-   3. Theme transition: fast circular reveal, then a single tide ripple
+   3. Theme transition
+   --------------------------------------------------------------------------
+   No ripple, no expanding circle. The theme swap uses the browser's
+   default View Transition crossfade when available; with reduced motion
+   (or no View Transition API) it is instant.
    -------------------------------------------------------------------------- */
-
-@keyframes theme-reveal-wave {
-  0%   { clip-path: circle(0px at var(--theme-origin-x) var(--theme-origin-y)); }
-  100% { clip-path: circle(var(--theme-reveal-radius) at var(--theme-origin-x) var(--theme-origin-y)); }
-}
-
-::view-transition-old(root),
-::view-transition-new(root) {
-  animation-duration: var(--theme-transition-duration, 700ms);
-  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
-  mix-blend-mode: normal;
-}
-::view-transition-old(root) { animation-name: none; }
-::view-transition-new(root) { animation-name: theme-reveal-wave; }
-
-/* One expanding ring, fired AFTER the reveal finishes. Its glow breathes
-   in a high tide / low tide pattern while the ring grows to the whole
-   page, then fades out. Total 1.5s. */
-.tide-ripple {
-  position: fixed;
-  width: var(--tide-size);
-  height: var(--tide-size);
-  margin-left: calc(var(--tide-size) / -2);
-  margin-top: calc(var(--tide-size) / -2);
-  border-radius: 50%;
-  border: 1.5px solid rgb(var(--theme-glow) / 0.85);
-  box-shadow:
-    0 0 12px rgb(var(--theme-glow) / 0.35),
-    inset 0 0 18px rgb(var(--theme-glow) / 0.12);
-  background:
-    radial-gradient(circle,
-      rgb(var(--theme-glow) / 0.06) 0%,
-      rgb(var(--theme-glow) / 0.02) 45%,
-      transparent 70%);
-  pointer-events: none;
-  z-index: 9998;
-  transform: scale(0);
-  animation: tide-expand 1.5s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
-}
-
-@keyframes tide-expand {
-  0%   { transform: scale(0); opacity: 0; }
-  4%   { opacity: 0.95; }
-  12%  { transform: scale(0.14); opacity: 0.3; }
-  20%  { transform: scale(0.22); opacity: 0.9; }
-  28%  { transform: scale(0.31); opacity: 0.28; }
-  36%  { transform: scale(0.41); opacity: 0.92; }
-  44%  { transform: scale(0.52); opacity: 0.3; }
-  52%  { transform: scale(0.63); opacity: 0.88; }
-  60%  { transform: scale(0.73); opacity: 0.32; }
-  68%  { transform: scale(0.82); opacity: 0.85; }
-  76%  { transform: scale(0.9); opacity: 0.35; }
-  84%  { transform: scale(0.96); opacity: 0.8; }
-  92%  { transform: scale(1); opacity: 0.45; }
-  100% { transform: scale(1); opacity: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tide-ripple { display: none; }
-}
 
 /* --------------------------------------------------------------------------
    4. Header bar
@@ -966,7 +910,6 @@ html:active-view-transition footer {
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-  .tide-ripple { display: none; }
   body, main, header, nav, article, aside, footer { transition-duration: 0.01ms; }
   .theme-toggle.animate-flicker-glow { animation: none; }
   .btn.btn-glare::after, .card-hover-glare::after { animation: none; }

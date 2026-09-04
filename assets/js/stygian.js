@@ -1,8 +1,8 @@
 /*!
  * Stygian - docs theme engine (vanilla JS, no dependencies)
- * Modules: theme switch (fast circular reveal + single post-transition
- * tide ripple), mobile navigation drawer, code copy buttons, table
- * wrappers, heading anchors, lazy Mermaid rendering.
+ * Modules: theme switch (clean crossfade, no ripple), mobile navigation
+ * drawer, code copy buttons, table wrappers, heading anchors, lazy
+ * Mermaid rendering.
  */
 (function () {
   'use strict';
@@ -10,8 +10,6 @@
   var doc = document;
   var root = doc.documentElement;
   var STORAGE_KEY = 'stygian-theme';
-  var REVEAL_DURATION = 700;   // ms, circular clip-path reveal
-  var TIDE_DURATION = 1500;    // ms, the single tide ripple after reveal
 
   function reduceMotion() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -44,47 +42,14 @@
     moon.style.display = showSun ? 'none' : '';
   }
 
-  /* One ripple: a single ring that expands from the toggle click to cover
-     the whole page, breathing high tide / low tide, fired only after the
-     page has finished transitioning. */
-  function spawnTideRipple(origin) {
-    var width = window.innerWidth;
-    var height = window.innerHeight;
-    var maxRadius = Math.hypot(
-      Math.max(origin.x, width - origin.x),
-      Math.max(origin.y, height - origin.y)
-    );
-    var el = doc.createElement('div');
-    el.className = 'tide-ripple';
-    el.setAttribute('aria-hidden', 'true');
-    el.style.left = origin.x + 'px';
-    el.style.top = origin.y + 'px';
-    el.style.setProperty('--tide-size', Math.ceil(maxRadius * 2) + 'px');
-    doc.body.appendChild(el);
-    window.setTimeout(function () {
-      if (el.parentNode) el.parentNode.removeChild(el);
-    }, TIDE_DURATION + 120);
-  }
-
-  function toggleTheme(originX, originY) {
+  /* Theme swap with no decoration: no ripple, no expanding circle.
+     Uses the browser's default View Transition crossfade when available;
+     instant otherwise (or with reduced motion). */
+  function toggleTheme() {
     var current = getTheme();
     var next = current === 'dark' ? 'light' : 'dark';
-    var origin = {
-      x: typeof originX === 'number' ? originX : window.innerWidth / 2,
-      y: typeof originY === 'number' ? originY : 32
-    };
 
     var applyTheme = function () { setTheme(next, true); };
-
-    // Circular reveal parameters (origin + radius as CSS variables).
-    var revealRadius = Math.hypot(
-      Math.max(origin.x, window.innerWidth - origin.x),
-      Math.max(origin.y, window.innerHeight - origin.y)
-    );
-    root.style.setProperty('--theme-transition-duration', REVEAL_DURATION + 'ms');
-    root.style.setProperty('--theme-origin-x', origin.x + 'px');
-    root.style.setProperty('--theme-origin-y', origin.y + 'px');
-    root.style.setProperty('--theme-reveal-radius', revealRadius + 'px');
 
     if (reduceMotion() || typeof doc.startViewTransition !== 'function') {
       applyTheme();
@@ -94,13 +59,7 @@
     var transition = doc.startViewTransition(function () {
       applyTheme();
     });
-    if (transition && transition.finished && typeof transition.finished.then === 'function') {
-      transition.finished.then(function () {
-        spawnTideRipple(origin);
-      });
-    } else {
-      spawnTideRipple(origin);
-    }
+    /* No post-transition effects: the transition is left to finish. */
   }
 
   function initTheme() {
@@ -110,15 +69,13 @@
       if (cfg && cfg.theme && cfg.theme.transition === false) useTransition = false;
     } catch (e) { /* keep defaults */ }
     doc.querySelectorAll('.js-theme-toggle').forEach(function (btn) {
-      btn.addEventListener('click', function (e) {
-        var x = e.clientX || e.pageX;
-        var y = e.clientY || e.pageY;
+      btn.addEventListener('click', function () {
         if (!useTransition) {
           var current = getTheme();
           setTheme(current === 'dark' ? 'light' : 'dark', true);
           return;
         }
-        toggleTheme(x, y);
+        toggleTheme();
       });
     });
     updateToggleIcons(getTheme());
