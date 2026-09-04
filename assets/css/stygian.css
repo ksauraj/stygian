@@ -488,6 +488,27 @@ html:active-view-transition footer {
   color: rgb(var(--color-bg));
 }
 
+/* Buttons sit inside .sty-prose, whose generic link rule (color = fg,
+   underline) outranks the .btn class. Re-assert button colors here. */
+.sty-prose a.btn,
+.sty-prose a.btn--ghost {
+  text-decoration: none;
+}
+.sty-prose a.btn {
+  color: rgb(var(--color-bg));
+}
+.sty-prose a.btn:hover {
+  color: rgb(var(--color-bg));
+  background: rgb(var(--color-fg) / 0.9);
+}
+.sty-prose a.btn--ghost {
+  color: rgb(var(--color-fg));
+}
+.sty-prose a.btn--ghost:hover {
+  color: rgb(var(--color-bg));
+  background: rgb(var(--color-fg));
+}
+
 /* --------------------------------------------------------------------------
    8. Flicker / glare effect suite
    -------------------------------------------------------------------------- */
