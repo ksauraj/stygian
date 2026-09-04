@@ -758,7 +758,10 @@ html:active-view-transition footer {
   display: inline-block;
   max-width: 100%;
   overflow-x: auto;
-  vertical-align: baseline;
+  /* inline-block with non-visible overflow loses its text baseline (CSS
+     uses the bottom margin edge instead), which floats chips above the
+     line. -0.6em re-aligns the chip's glyph baseline with the text. */
+  vertical-align: -0.6em;
   white-space: nowrap;
   font-family: 'Space Mono', monospace;
   font-size: 0.85em;
