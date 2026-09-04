@@ -1,8 +1,8 @@
 /*!
  * Stygian - docs theme engine (vanilla JS, no dependencies)
- * Modules: theme switch with binary-ripple View Transition, mobile
- * navigation drawer, code copy buttons, table wrappers, heading anchors,
- * lazy Mermaid rendering.
+ * Modules: theme switch (fast circular reveal + single post-transition
+ * tide ripple), mobile navigation drawer, code copy buttons, table
+ * wrappers, heading anchors, lazy Mermaid rendering.
  */
 (function () {
   'use strict';
@@ -10,14 +10,15 @@
   var doc = document;
   var root = doc.documentElement;
   var STORAGE_KEY = 'stygian-theme';
-  var TRANSITION_DURATION = 1800;
+  var REVEAL_DURATION = 700;   // ms, circular clip-path reveal
+  var TIDE_DURATION = 1500;    // ms, the single tide ripple after reveal
 
   function reduceMotion() {
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
   /* ==================================================================
-   * THEME - data-theme swap with binary-ripple View Transition
+   * THEME - data-theme swap
    * ================================================================== */
 
   function getTheme() {
@@ -43,226 +44,26 @@
     moon.style.display = showSun ? 'none' : '';
   }
 
-  /* --- ripple engine (port of the ksau-portfolio binary wave) --- */
-
-  var MOBILE_RIPPLE_CENTRES = 7;
-  var DESKTOP_RIPPLE_CENTRES = 18;
-  var MIN_RIPPLE_BAND_CELLS = 12;
-  var MAX_RIPPLE_BAND_CELLS = 20;
-  var WAVE_SPEED = 0.28;
-  var COLLISION_OVERLAP_DURATION = 180;
-  var COLLISION_FADE_DURATION = 420;
-  var MAIN_DESKTOP_CELL_SIZE = 12;
-  var MAIN_MOBILE_CELL_SIZE = 16;
-  var DESKTOP_CELL_SIZE = 6;
-  var MOBILE_CELL_SIZE = 8;
-
-  function transitionProgress(progress) {
-    if (progress < 0.35) return progress * 0.9;
-    if (progress < 0.7) return 0.315 + (progress - 0.35) * 0.12;
-    return 0.357 + Math.pow((progress - 0.7) / 0.3, 0.55) * 0.643;
-  }
-
-  function transitionArrival(revealProgress) {
-    if (revealProgress < 0.315) return revealProgress / 0.9;
-    if (revealProgress < 0.357) return 0.35 + (revealProgress - 0.315) / 0.12;
-    return 0.7 + Math.pow((revealProgress - 0.357) / 0.643, 1 / 0.55) * 0.3;
-  }
-
-  function lowerBound(cells, distance) {
-    var low = 0, high = cells.length;
-    while (low < high) {
-      var middle = (low + high) >>> 1;
-      if (cells[middle].distance < distance) low = middle + 1;
-      else high = middle;
-    }
-    return low;
-  }
-
-  function createMainField(center, width, height, cellSize) {
-    var cells = [];
-    var columns = Math.ceil(width / cellSize) + 1;
-    var rows = Math.ceil(height / cellSize) + 1;
-    for (var row = 0; row < rows; row++) {
-      var y = row * cellSize + cellSize / 2;
-      for (var col = 0; col < columns; col++) {
-        var x = col * cellSize + cellSize / 2;
-        cells.push({
-          x: x,
-          y: y,
-          distance: Math.hypot(x - center.x, y - center.y),
-          bit: Math.random() > 0.5 ? 1 : 0,
-          shimmer: 0.72 + (((col * 17 + row * 31) % 7) / 7) * 0.28
-        });
-      }
-    }
-    cells.sort(function (a, b) { return a.distance - b.distance; });
-    return cells;
-  }
-
-  function solveCollisionTime(first, second) {
-    var distance = Math.hypot(first.x - second.x, first.y - second.y);
-    var laterStart = Math.max(first.delay, second.delay);
-    var firstRadiusAtLaterStart = Math.max(0, laterStart - first.delay) * WAVE_SPEED;
-    var secondRadiusAtLaterStart = Math.max(0, laterStart - second.delay) * WAVE_SPEED;
-    if (firstRadiusAtLaterStart + secondRadiusAtLaterStart >= distance) return laterStart;
-    return laterStart + (distance - firstRadiusAtLaterStart - secondRadiusAtLaterStart) / (2 * WAVE_SPEED);
-  }
-
-  function createRippleFields(seeds, origin, width, height, cellSize) {
-    var ripples = seeds.map(function (seed, index) {
-      var collisionTime = Infinity;
-      for (var other = 0; other < seeds.length; other++) {
-        if (other === index) continue;
-        collisionTime = Math.min(collisionTime, solveCollisionTime(seed, seeds[other]));
-      }
-      var endTime = collisionTime + COLLISION_OVERLAP_DURATION + COLLISION_FADE_DURATION;
-      var maxDistance = Math.max(0, endTime - seed.delay) * WAVE_SPEED;
-      return {
-        x: seed.x, y: seed.y, band: seed.band, delay: seed.delay,
-        collisionTime: collisionTime, maxDistance: maxDistance, cells: []
-      };
-    });
-
-    ripples.forEach(function (ripple) {
-      var left = Math.max(0, ripple.x - ripple.maxDistance);
-      var right = Math.min(width, ripple.x + ripple.maxDistance);
-      var top = Math.max(0, ripple.y - ripple.maxDistance);
-      var bottom = Math.min(height, ripple.y + ripple.maxDistance);
-      for (var y = top; y <= bottom; y += cellSize) {
-        for (var x = left; x <= right; x += cellSize) {
-          var distance = Math.hypot(x - ripple.x, y - ripple.y);
-          if (distance > ripple.maxDistance) continue;
-          ripple.cells.push({
-            x: x, y: y,
-            distance: distance,
-            revealDistance: Math.hypot(x - origin.x, y - origin.y),
-            bit: Math.random() > 0.5 ? 1 : 0,
-            shimmer: 0.72 + Math.random() * 0.28
-          });
-        }
-      }
-      ripple.cells.sort(function (a, b) { return a.distance - b.distance; });
-    });
-    return ripples;
-  }
-
-  function runBinaryRipple(origin, targetTheme) {
-    var canvas = doc.createElement('canvas');
-    canvas.setAttribute('aria-hidden', 'true');
-    canvas.className = 'binary-pixel-transition';
-    doc.body.appendChild(canvas);
-    var context = canvas.getContext('2d');
-    if (!context) { canvas.remove(); return; }
-
+  /* One ripple: a single ring that expands from the toggle click to cover
+     the whole page, breathing high tide / low tide, fired only after the
+     page has finished transitioning. */
+  function spawnTideRipple(origin) {
     var width = window.innerWidth;
     var height = window.innerHeight;
-    var isMobile = window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
-    var rippleCount = isMobile ? MOBILE_RIPPLE_CENTRES : DESKTOP_RIPPLE_CENTRES;
-    var rippleColumns = Math.ceil(Math.sqrt((rippleCount * width) / height));
-    var rippleRows = Math.ceil(rippleCount / rippleColumns);
-    var cellSize = isMobile ? MOBILE_CELL_SIZE : DESKTOP_CELL_SIZE;
-    var mainCellSize = isMobile ? MAIN_MOBILE_CELL_SIZE : MAIN_DESKTOP_CELL_SIZE;
-    var dpr = isMobile ? 1 : Math.min(window.devicePixelRatio || 1, 1.25);
-    var startedAt = performance.now();
-    var center = origin || { x: width / 2, y: 32 };
-    var maxRevealRadius = Math.hypot(
-      Math.max(center.x, width - center.x),
-      Math.max(center.y, height - center.y)
+    var maxRadius = Math.hypot(
+      Math.max(origin.x, width - origin.x),
+      Math.max(origin.y, height - origin.y)
     );
-
-    var rippleSeeds = Array.from({ length: rippleCount }, function (_, index) {
-      var column = index % rippleColumns;
-      var row = Math.floor(index / rippleColumns);
-      var x = width * ((column + 0.2 + Math.random() * 0.6) / rippleColumns);
-      var y = height * ((row + 0.2 + Math.random() * 0.6) / rippleRows);
-      var distanceFromOrigin = Math.hypot(x - center.x, y - center.y);
-      var revealArrival = transitionArrival(Math.min(1, distanceFromOrigin / maxRevealRadius));
-      var bandCells = MIN_RIPPLE_BAND_CELLS + Math.random() * (MAX_RIPPLE_BAND_CELLS - MIN_RIPPLE_BAND_CELLS);
-      return {
-        x: x, y: y,
-        band: bandCells * cellSize,
-        delay: revealArrival * TRANSITION_DURATION
-      };
-    });
-
-    var rippleCentres = createRippleFields(rippleSeeds, center, width, height, cellSize);
-
-    canvas.width = Math.ceil(width * dpr);
-    canvas.height = Math.ceil(height * dpr);
-    canvas.style.width = width + 'px';
-    canvas.style.height = height + 'px';
-    context.setTransform(dpr, 0, 0, dpr, 0, 0);
-    context.font = '700 ' + (isMobile ? 8 : 9) + "px 'Space Mono', monospace";
-    context.textAlign = 'center';
-    context.textBaseline = 'middle';
-    var rgb = targetTheme === 'dark' ? '255,255,255' : '17,24,39';
-    var frame = 0;
-
-    var mainCells = createMainField(center, width, height, mainCellSize);
-
-    function drawMainReveal(radius) {
-      var revealBand = mainCellSize * 3;
-      var from = lowerBound(mainCells, Math.max(0, radius - revealBand));
-      var to = lowerBound(mainCells, radius);
-      for (var i = from; i < to; i++) {
-        var cell = mainCells[i];
-        var offset = radius - cell.distance;
-        var alpha = Math.sin((offset / revealBand) * Math.PI) * 0.7 * cell.shimmer;
-        if (alpha < 0.05) continue;
-        context.fillStyle = 'rgba(' + rgb + ',' + alpha + ')';
-        context.fillText(cell.bit ? '1' : '0', cell.x, cell.y);
-      }
-    }
-
-    function drawLocalRipple(ripple, elapsed, revealedRadius) {
-      var localElapsed = elapsed - ripple.delay;
-      if (localElapsed <= 0) return;
-      var collisionElapsed = elapsed - ripple.collisionTime;
-      var collisionGlow = collisionElapsed <= 0
-        ? 1
-        : 1 + Math.max(0, 1 - collisionElapsed / COLLISION_OVERLAP_DURATION) * 0.8;
-      var fadeElapsed = collisionElapsed - COLLISION_OVERLAP_DURATION;
-      var collisionOpacity = fadeElapsed <= 0
-        ? 1
-        : Math.max(0, 1 - fadeElapsed / COLLISION_FADE_DURATION) ** 2;
-      if (collisionOpacity <= 0) return;
-      var rippleRadius = localElapsed * WAVE_SPEED;
-      var from = lowerBound(ripple.cells, Math.max(0, rippleRadius - ripple.band));
-      var to = lowerBound(ripple.cells, rippleRadius);
-      for (var i = from; i < to; i++) {
-        var cell = ripple.cells[i];
-        if (cell.revealDistance > revealedRadius) continue;
-        var offset = rippleRadius - cell.distance;
-        var intensity = Math.sin((offset / ripple.band) * Math.PI);
-        var alpha = Math.min(1, intensity * cell.shimmer * collisionGlow * collisionOpacity * 0.95);
-        if (alpha < 0.08) continue;
-        context.fillStyle = 'rgba(' + rgb + ',' + alpha + ')';
-        context.fillText(cell.bit ? '1' : '0', cell.x, cell.y);
-      }
-    }
-
-    var latestRippleEnd = Math.max.apply(null, rippleCentres.map(function (r) {
-      return r.collisionTime + COLLISION_OVERLAP_DURATION + COLLISION_FADE_DURATION;
-    }));
-    var animationEnd = Math.max(TRANSITION_DURATION, latestRippleEnd);
-
-    function draw(now) {
-      var elapsed = now - startedAt;
-      var progress = Math.min(elapsed / TRANSITION_DURATION, 1);
-      var revealedRadius = transitionProgress(progress) * maxRevealRadius;
-      context.clearRect(0, 0, width, height);
-      if (elapsed < TRANSITION_DURATION) drawMainReveal(revealedRadius);
-      rippleCentres.forEach(function (r) { drawLocalRipple(r, elapsed, revealedRadius); });
-      if (elapsed < animationEnd) {
-        frame = requestAnimationFrame(draw);
-      } else {
-        context.clearRect(0, 0, width, height);
-        canvas.remove();
-      }
-    }
-
-    frame = requestAnimationFrame(draw);
+    var el = doc.createElement('div');
+    el.className = 'tide-ripple';
+    el.setAttribute('aria-hidden', 'true');
+    el.style.left = origin.x + 'px';
+    el.style.top = origin.y + 'px';
+    el.style.setProperty('--tide-size', Math.ceil(maxRadius * 2) + 'px');
+    doc.body.appendChild(el);
+    window.setTimeout(function () {
+      if (el.parentNode) el.parentNode.removeChild(el);
+    }, TIDE_DURATION + 120);
   }
 
   function toggleTheme(originX, originY) {
@@ -275,44 +76,49 @@
 
     var applyTheme = function () { setTheme(next, true); };
 
+    // Circular reveal parameters (origin + radius as CSS variables).
     var revealRadius = Math.hypot(
       Math.max(origin.x, window.innerWidth - origin.x),
       Math.max(origin.y, window.innerHeight - origin.y)
     );
-    root.style.setProperty('--theme-transition-duration', TRANSITION_DURATION + 'ms');
+    root.style.setProperty('--theme-transition-duration', REVEAL_DURATION + 'ms');
     root.style.setProperty('--theme-origin-x', origin.x + 'px');
     root.style.setProperty('--theme-origin-y', origin.y + 'px');
     root.style.setProperty('--theme-reveal-radius', revealRadius + 'px');
-    root.style.setProperty('--theme-reveal-pause-start', revealRadius * 0.315 + 'px');
-    root.style.setProperty('--theme-reveal-pause-end', revealRadius * 0.357 + 'px');
 
     if (reduceMotion() || typeof doc.startViewTransition !== 'function') {
       applyTheme();
       return;
     }
 
-    doc.startViewTransition(function () {
+    var transition = doc.startViewTransition(function () {
       applyTheme();
-      runBinaryRipple(origin, next);
     });
+    if (transition && transition.finished && typeof transition.finished.then === 'function') {
+      transition.finished.then(function () {
+        spawnTideRipple(origin);
+      });
+    } else {
+      spawnTideRipple(origin);
+    }
   }
 
   function initTheme() {
-    var transition = true;
+    var useTransition = true;
     try {
       var cfg = JSON.parse(doc.body.getAttribute('data-sty-config') || '{}');
-      if (cfg && cfg.theme && cfg.theme.transition === false) transition = false;
+      if (cfg && cfg.theme && cfg.theme.transition === false) useTransition = false;
     } catch (e) { /* keep defaults */ }
     doc.querySelectorAll('.js-theme-toggle').forEach(function (btn) {
       btn.addEventListener('click', function (e) {
         var x = e.clientX || e.pageX;
         var y = e.clientY || e.pageY;
-        if (transition) {
-          toggleTheme(x, y);
-        } else {
+        if (!useTransition) {
           var current = getTheme();
           setTheme(current === 'dark' ? 'light' : 'dark', true);
+          return;
         }
+        toggleTheme(x, y);
       });
     });
     updateToggleIcons(getTheme());
@@ -373,6 +179,8 @@
 
   function initCopyButtons() {
     doc.querySelectorAll('.highlighter-rouge').forEach(function (wrap) {
+      // fenced blocks only: inline code carries the class too, skip it
+      if (wrap.tagName !== 'DIV') return;
       if (wrap.parentElement && wrap.parentElement.classList.contains('code-block')) return;
       var block = doc.createElement('div');
       block.className = 'code-block';
@@ -414,7 +222,7 @@
    * ================================================================== */
 
   function initTableWrappers() {
-    doc.querySelectorAll('.sty-prose > table, .sty-prose table').forEach(function (table) {
+    doc.querySelectorAll('.sty-prose table').forEach(function (table) {
       if (table.parentElement && table.parentElement.classList.contains('table-scroll')) return;
       var wrap = doc.createElement('div');
       wrap.className = 'table-scroll';
