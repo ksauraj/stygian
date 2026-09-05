@@ -3,6 +3,17 @@
 # style). One markdown file in your docs collection == one page here.
 layout: default
 ---
+{%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+{%- assign all_docs = site[collection_name] -%}
+{%- assign page_key = page.path | split: '/' | last | remove: '.md' -%}
+{%- assign parent_doc = nil -%}
+{%- if page.parent and page.parent != '' -%}
+  {%- for d in all_docs -%}
+    {%- assign dk = d.path | split: '/' | last | remove: '.md' -%}
+    {%- if dk == page.parent -%}{%- assign parent_doc = d -%}{%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+
 <div class="docs">
   <aside class="docs__sidebar" id="sidebar" aria-label="Documentation navigation">
     <div class="docs__sidebar-head">
@@ -16,6 +27,23 @@ layout: default
   <div class="docs__content">
     <article>
       <header class="docs__title">
+        <div class="docs__meta">
+          <nav class="crumbs" aria-label="Breadcrumb">
+            <ol class="crumbs__list">
+              <li class="crumbs__item"><a href="{{ site.baseurl }}/">Home</a></li>
+              {% if parent_doc %}
+                <li class="crumbs__item"><a href="{{ parent_doc.url | relative_url }}">{{ parent_doc.title }}</a></li>
+              {% endif %}
+              <li class="crumbs__item" aria-current="page">{{ page.title }}</li>
+            </ol>
+          </nav>
+          {%- assign edit = site.stygian.edit -%}
+          {%- if edit.enabled and edit.repo -%}
+            {%- assign ebranch = edit.branch | default: 'main' -%}
+            {%- assign emode = edit.view | default: 'tree' -%}
+            <a class="edit-link" href="{{ edit.repo }}/{{ emode }}/{{ ebranch }}/{{ page.path }}" target="_blank" rel="noopener noreferrer">Edit this page on GitHub</a>
+          {%- endif -%}
+        </div>
         <h1>{{ page.title }}</h1>
         {% if page.lede %}<p class="lede">{{ page.lede }}</p>{% endif %}
       </header>

@@ -1,0 +1,15 @@
+---
+# Search index for the client-side search (search-data.json trick used by
+# just-the-docs: a Liquid-processed asset - no plugin needed, works on
+# GitHub Pages via remote_theme). Rendered per site at build time.
+layout: null
+---
+{%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+[
+{%- for doc in site[collection_name] -%}
+{%- unless doc.search_exclude -%}
+  {"title":{{ doc.title | default: doc.name | jsonify }},"url":{{ doc.url | relative_url | jsonify }},"content":{{ doc.content | markdownify | replace: '</p>', ' ' | replace: '</li>', ' ' | replace: '</h1>', ' ' | replace: '</h2>', ' ' | replace: '</h3>', ' ' | replace: '</h4>', ' ' | replace: '<br />', ' ' | replace: '
+', ' ' | strip_html | jsonify }}}{% unless forloop.last %},{% endunless %}
+{%- endunless -%}
+{%- endfor -%}
+]

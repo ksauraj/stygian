@@ -4,12 +4,17 @@
 <!DOCTYPE html>
 <html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="{{ site.stygian.theme.default | default: 'dark' }}" class="no-js">
   {% include head.html %}
-  <body id="top" class="bg-bg text-fg" data-sty-config='{"theme":{"transition":{{ site.stygian.theme.transition | default: "true" }}}}'>
+  {%- capture sty_cfg -%}{"theme":{"transition":{% if site.stygian.theme.transition == false %}false{% else %}true{% endif %}},"search":{"enabled":{% if site.stygian.search.enabled == false %}false{% else %}true{% endif %},"placeholder":{{ site.stygian.search.placeholder | default: "Search docs" | jsonify }},"baseurl":{{ site.baseurl | jsonify }}},"back_to_top":{% if site.stygian.back_to_top == false %}false{% else %}true{% endif %}}{%- endcapture -%}
+  <body id="top" class="bg-bg text-fg" data-sty-config='{{ sty_cfg | strip }}'>
     <script>document.documentElement.classList.remove('no-js');</script>
     <a class="skip-link" href="#main">Skip to content</a>
     {% include header.html %}
     <main id="main">{{ content }}</main>
     {% include site-footer.html %}
+    <div class="search-overlay js-search-overlay" hidden role="dialog" aria-modal="true" aria-label="Search documentation"></div>
+    <button type="button" class="back-to-top js-back-to-top" aria-label="Back to top" title="Back to top" hidden>
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+    </button>
     {% include scripts.html %}
   </body>
 </html>

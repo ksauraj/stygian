@@ -75,7 +75,16 @@ stygian:
       - { label: GitHub, href: https://github.com/ksauraj/stygian }
   theme:
     default: dark        # fallback before the visitor's saved choice
-    transition: true     # binary-ripple View Transition on theme switch
+    transition: true     # View Transition reveal on theme switch
+  search:
+    enabled: true
+    placeholder: Search docs
+  back_to_top: true
+  edit:
+    enabled: true
+    repo: https://github.com/ksauraj/stygian
+    branch: main
+    view: tree
   footer:
     note: Stygian - a modern docs theme for Jekyll.
     right: "© 2026 ksauraj · MIT licensed"

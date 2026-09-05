@@ -260,12 +260,249 @@
   }
 
   /* ==================================================================
+   * SEARCH (client-side, index fetched from search-data.json)
+   * ================================================================== */
+
+  var styCfg = null;
+
+  function readConfig() {
+    if (styCfg) return styCfg;
+    try { styCfg = JSON.parse(doc.body.getAttribute('data-sty-config') || '{}'); }
+    catch (e) { styCfg = {}; }
+    return styCfg;
+  }
+
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function escapeRegExp(str) {
+    return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  var searchIndex = null;
+  var searchIndexPromise = null;
+
+  function loadSearchIndex(baseurl) {
+    if (!searchIndexPromise) {
+      searchIndexPromise = fetch(baseurl + '/assets/js/search-data.json', { credentials: 'same-origin' })
+        .then(function (r) { if (!r.ok) throw new Error('search index ' + r.status); return r.json(); })
+        .then(function (json) { searchIndex = json || []; })
+        .catch(function () { searchIndex = []; });
+    }
+    return searchIndexPromise;
+  }
+
+  function searchDocs(query, index) {
+    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    if (!tokens.length || !index.length) return [];
+    var scored = [];
+    for (var i = 0; i < index.length; i++) {
+      var doc = index[i];
+      var title = (doc.title || '').toLowerCase();
+      var content = (doc.content || '').toLowerCase();
+      var score = 0;
+      var hit = true;
+      for (var t = 0; t < tokens.length; t++) {
+        var tok = tokens[t];
+        var inTitle = title.indexOf(tok) !== -1;
+        var inContent = content.indexOf(tok) !== -1;
+        if (!inTitle && !inContent) { hit = false; break; }
+        if (title.indexOf(tok) === 0) score += 30;
+        else if (inTitle) score += 18;
+        if (inContent) score += Math.min(6, (content.split(tok).length - 1)) * 3;
+      }
+      if (hit) scored.push({ doc: doc, score: score });
+    }
+    scored.sort(function (a, b) { return b.score - a.score || String(a.doc.title).localeCompare(String(b.doc.title)); });
+    return scored.slice(0, 12).map(function (s) { return s.doc; });
+  }
+
+  function snippetFor(doc, query) {
+    var content = String(doc.content || '');
+    var text = content.replace(/\s+/g, ' ').trim();
+    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    var at = -1;
+    for (var i = 0; i < tokens.length; i++) {
+      at = text.toLowerCase().indexOf(tokens[i]);
+      if (at !== -1) break;
+    }
+    if (at === -1) at = 0;
+    var start = Math.max(0, at - 55);
+    var end = Math.min(text.length, start + 150);
+    if (end - start < 150) start = Math.max(0, end - 150);
+    return { text: text.slice(start, end), lead: start > 0, trail: end < text.length, at: at - start };
+  }
+
+  function appendHighlighted(parent, text, query) {
+    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+    var re = new RegExp('(' + tokens.map(escapeRegExp).join('|') + ')', 'gi');
+    var parts = text.split(re);
+    // split() with a capturing group: even indexes are plain text,
+    // odd indexes are the matched separators (the highlights)
+    for (var i = 0; i < parts.length; i++) {
+      if (!parts[i]) continue;
+      if (i % 2 === 1) parent.appendChild(makeMark(parts[i]));
+      else parent.appendChild(doc.createTextNode(parts[i]));
+    }
+  }
+
+  function makeMark(text) {
+    var m = doc.createElement('mark');
+    m.textContent = text;
+    return m;
+  }
+
+  function renderSearchResults(query, list, meta, index) {
+    list.innerHTML = '';
+    if (!query.trim()) {
+      meta.textContent = 'Type to search the documentation.';
+      return;
+    }
+    var hits = searchDocs(query, index);
+    if (!hits.length) {
+      meta.textContent = 'No results for "' + query + '".';
+      return;
+    }
+    meta.textContent = hits.length + (hits.length === 1 ? ' result' : ' results') + ' for "' + query + '".';
+    for (var i = 0; i < hits.length; i++) {
+      var hit = hits[i];
+      var li = doc.createElement('li');
+      li.className = 'search-overlay__result';
+      var a = doc.createElement('a');
+      a.href = hit.url;
+      var title = doc.createElement('span');
+      title.className = 'search-overlay__result-title';
+      appendHighlighted(title, hit.title || hit.url, query);
+      var snip = doc.createElement('span');
+      snip.className = 'search-overlay__result-snippet';
+      var sn = snippetFor(hit, query);
+      var body = doc.createElement('span');
+      if (sn.lead) body.appendChild(doc.createTextNode('... '));
+      appendHighlighted(body, sn.text, query);
+      if (sn.trail) body.appendChild(doc.createTextNode(' ...'));
+      snip.appendChild(body);
+      a.appendChild(title);
+      a.appendChild(snip);
+      li.appendChild(a);
+      list.appendChild(li);
+    }
+  }
+
+  function initSearch() {
+    var cfg = readConfig();
+    var searchCfg = cfg.search || {};
+    if (searchCfg.enabled === false) return;
+    var overlay = doc.querySelector('.js-search-overlay');
+    var openBtn = doc.querySelector('.js-search-open');
+    if (!overlay || !openBtn) return;
+    var placeholder = searchCfg.placeholder || 'Search docs';
+    var baseurl = searchCfg.baseurl || '';
+
+    overlay.innerHTML =
+      '<div class="search-overlay__panel">' +
+        '<div class="search-overlay__bar">' +
+          '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
+          '<input type="search" class="search-overlay__input js-search-input" placeholder="' + escapeHtml(placeholder) + '" autocomplete="off" spellcheck="false" aria-label="Search">' +
+          '<button type="button" class="search-overlay__close js-search-close">Esc</button>' +
+        '</div>' +
+        '<p class="search-overlay__meta js-search-meta">Type to search the documentation.</p>' +
+        '<ul class="search-overlay__results js-search-results"></ul>' +
+      '</div>';
+
+    var input = overlay.querySelector('.js-search-input');
+    var meta = overlay.querySelector('.js-search-meta');
+    var list = overlay.querySelector('.js-search-results');
+
+    function open() {
+      overlay.hidden = false;
+      doc.body.classList.add('modal-open');
+      input.value = '';
+      meta.textContent = 'Type to search the documentation.';
+      list.innerHTML = '';
+      input.focus();
+      loadSearchIndex(baseurl);
+    }
+    function close() {
+      overlay.hidden = true;
+      doc.body.classList.remove('modal-open');
+    }
+    function onInput() {
+      if (!searchIndex) { loadSearchIndex(baseurl).then(function () { renderSearchResults(input.value, list, meta, searchIndex); }); return; }
+      renderSearchResults(input.value, list, meta, searchIndex);
+    }
+
+    openBtn.addEventListener('click', open);
+    overlay.querySelector('.js-search-close').addEventListener('click', close);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+    input.addEventListener('input', onInput);
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { close(); return; }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        var links = Array.prototype.slice.call(list.querySelectorAll('a'));
+        if (!links.length) return;
+        e.preventDefault();
+        var cur = links.indexOf(doc.activeElement);
+        var next = e.key === 'ArrowDown' ? Math.min(links.length - 1, cur + 1) : Math.max(0, cur - 1);
+        if (cur !== -1) links[cur].classList.remove('is-active');
+        links[next].classList.add('is-active');
+        links[next].focus();
+        return;
+      }
+      if (e.key === 'Enter') {
+        var active = list.querySelector('a.is-active');
+        var first = list.querySelector('a');
+        var target = active || first;
+        if (target) { e.preventDefault(); window.location.href = target.href; }
+      }
+    });
+
+    doc.addEventListener('keydown', function (e) {
+      if (e.key === '/' && overlay.hidden) {
+        var tag = (doc.activeElement && doc.activeElement.tagName) || '';
+        var typing = tag === 'INPUT' || tag === 'TEXTAREA' || (doc.activeElement && doc.activeElement.isContentEditable);
+        if (!typing) { e.preventDefault(); open(); }
+      }
+    });
+  }
+
+  /* ==================================================================
+   * BACK TO TOP (floating button)
+   * ================================================================== */
+
+  function initBackToTop() {
+    var cfg = readConfig();
+    if (cfg.back_to_top === false) return;
+    var btn = doc.querySelector('.js-back-to-top');
+    if (!btn) return;
+    var ticking = false;
+
+    function update() {
+      ticking = false;
+      btn.hidden = window.pageYOffset < 560;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+    }, { passive: true });
+    update();
+
+    btn.addEventListener('click', function () {
+      var smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' });
+    });
+  }
+
+  /* ==================================================================
    * INIT
    * ================================================================== */
 
   function init() {
     initTheme();
     initNav();
+    initSearch();
+    initBackToTop();
     initCopyButtons();
     initTableWrappers();
     initHeadingAnchors();
