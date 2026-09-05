@@ -14,6 +14,27 @@ layout: default
   {%- endfor -%}
 {%- endif -%}
 
+{%- comment -%}
+  The layout renders the page title as its H1. Markdown files that also
+  open with "# Title" would duplicate it, so a leading H1 in the content
+  (allowing only whitespace before it) is dropped.
+{%- endcomment -%}
+{%- capture prose_content -%}{{ content }}{%- endcapture -%}
+{%- assign prose_parts = prose_content | split: '<h1' -%}
+{%- assign prose_lead = prose_parts[0] | strip -%}
+{%- if prose_parts.size > 1 and prose_lead == '' -%}
+  {%- assign prose_htail = prose_parts[1] | split: '</h1>' -%}
+  {%- if prose_htail.size > 1 -%}
+    {%- assign prose_body = prose_parts[0] | append: prose_htail[1] -%}
+  {%- else -%}
+    {%- assign prose_body = prose_content -%}
+  {%- endif -%}
+{%- else -%}
+  {%- assign prose_body = prose_content -%}
+{%- endif -%}
+
+{%- assign seo_enabled = site.stygian.seo.enabled | default: true -%}
+
 <div class="docs">
   <aside class="docs__sidebar" id="sidebar" aria-label="Documentation navigation">
     <div class="docs__sidebar-head">
@@ -47,8 +68,37 @@ layout: default
         <h1>{{ page.title }}</h1>
         {% if page.lede %}<p class="lede">{{ page.lede }}</p>{% endif %}
       </header>
-      <div class="sty-prose">{{ content }}</div>
+      <div class="sty-prose">{{ prose_body }}</div>
       {% include prev-next.html %}
     </article>
   </div>
 </div>
+
+{% if seo_enabled %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "{{ site.url | append: site.baseurl | append: '/' }}"
+    }{% if parent_doc %},
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": {{ parent_doc.title | jsonify }},
+      "item": "{{ site.url | append: site.baseurl | append: parent_doc.url }}"
+    }{% endif %},
+    {
+      "@type": "ListItem",
+      "position": {% if parent_doc %}3{% else %}2{% endif %},
+      "name": {{ page.title | jsonify }},
+      "item": "{{ site.url | append: site.baseurl | append: page.url }}"
+    }
+  ]
+}
+</script>
+{% endif %}

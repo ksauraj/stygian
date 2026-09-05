@@ -81,6 +81,9 @@ stygian:
     enabled: true
     placeholder: Search docs
   back_to_top: true
+  seo:
+    enabled: true          # JSON-LD, Open Graph, Twitter card, canonical
+    # image: /assets/img/og.png   # optional Open Graph image (or absolute URL)
   edit:
     enabled: true
     repo: https://github.com/ksauraj/stygian

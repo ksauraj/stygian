@@ -2,6 +2,9 @@
 {%- assign page_title = page.title | default: nil -%}
 {%- assign meta_desc = page.description | default: page.lede | default: site.description | strip_html | normalize_whitespace | truncate: 160 -%}
 {%- assign canonical_url = site.url | append: site.baseurl | append: page.url | remove_first: 'index.html' -%}
+{%- assign seo_enabled = site.stygian.seo.enabled | default: true -%}
+{%- assign seo_image = site.stygian.seo.image | default: nil -%}
+{%- if seo_image -%}{%- unless seo_image contains 'http' -%}{%- assign seo_image = site.url | append: site.baseurl | append: seo_image -%}{%- endunless -%}{%- endif -%}
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
 <title>{% if page_title %}{{ page_title | escape }} · {{ site_title | escape }}{% else %}{{ site_title | escape }}{% endif %}</title>
@@ -12,12 +15,27 @@
 <!-- favicon: a lone glyph in the dark -->
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0d0d'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='700' fill='%23fff' text-anchor='middle'%3E01%3C/text%3E%3C/svg%3E">
 
+{% if seo_enabled %}
 <meta property="og:title" content="{% if page_title %}{{ page_title | escape }}{% else %}{{ site_title | escape }}{% endif %}">
 <meta property="og:description" content="{{ meta_desc | escape }}">
 <meta property="og:url" content="{{ canonical_url }}">
 <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
 <meta property="og:site_name" content="{{ site_title | escape }}">
+{% if seo_image %}<meta property="og:image" content="{{ seo_image }}">
 <meta name="twitter:card" content="summary_large_image">
+{% else %}<meta name="twitter:card" content="summary">
+{% endif %}
+{%- assign site_root = site.url | append: site.baseurl | append: '/' -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": {{ site_title | jsonify }}{% if site.tagline %},
+  "alternateName": {{ site.tagline | jsonify }}{% endif %},
+  "url": "{{ site_root }}"
+}
+</script>
+{% endif %}
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,7 +43,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap">
 
 <!-- Theme styles (versioned to bust GitHub Pages' 10-minute asset cache) -->
-<link rel="stylesheet" href="{{ '/assets/css/stygian.css' | relative_url }}?v=9">
+<link rel="stylesheet" href="{{ '/assets/css/stygian.css' | relative_url }}?v=10">
 
 <!-- Pre-paint theme boot: apply the saved theme before first render (no flash) -->
 <script>
