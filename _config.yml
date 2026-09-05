@@ -11,8 +11,9 @@ tagline: A modern docs theme for Jekyll & GitHub Pages.
 description: >-
   Stygian is a modern, just-the-docs-style Jekyll theme for GitHub Pages
   documentation. Render markdown collections with sidebar navigation,
-  prev/next browsing, dark & light themes and a binary-ripple theme
-  transition. No frameworks, plain CSS variables and vanilla JavaScript.
+  search, breadcrumbs, prev/next browsing, dark & light themes with a
+  View Transitions reveal, and automatic SEO. No frameworks, plain CSS
+  variables and vanilla JavaScript.
 
 url: "https://ksauraj.github.io"
 baseurl: "/stygian"

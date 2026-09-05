@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["ksauraj"]
   spec.email         = ["gitsauraj@gmail.com"]
 
-  spec.summary       = "Stygian - a modern docs theme for Jekyll and GitHub Pages with dark/light themes and a binary-ripple transition."
-  spec.description   = "Stygian is a docs-first Jekyll theme in the spirit of just-the-docs. Drop markdown files into a docs collection and it renders a documentation site with ordered sidebar navigation, nested sections (parent/nav_order/nav_exclude), prev/next page links, and a prose engine for code blocks with copy buttons, scrollable tables, callouts and lazy Mermaid diagrams. Includes a light and dark design system built on CSS custom properties, a View Transitions theme switch with a collision-aware binary-glyph ripple, and a restrained flicker/glare effect suite. No frameworks, no build step: plain CSS variables and one vanilla JavaScript file."
+  spec.summary       = "Stygian - a modern docs theme for Jekyll and GitHub Pages: search, dark/light themes, SEO."
+  spec.description   = "Stygian is a docs-first Jekyll theme in the spirit of just-the-docs. Drop markdown files into a docs collection and it renders a documentation site with ordered sidebar navigation (nav_order, parent nesting, nav_exclude), breadcrumbs, prev/next paging, client-side search with zero plugins, copy buttons on code blocks, callouts, scrollable tables, lazy Mermaid diagrams that follow the theme, and automatic SEO (WebSite + BreadcrumbList JSON-LD, Open Graph, canonical). Includes dark and light design systems built on CSS custom properties, a saved visitor theme preference with a View Transitions circular reveal, extension hooks (head/header/footer/nav-footer custom), reduced-motion support, and restrained flicker/glare accents. No frameworks, no build step: one vanilla JavaScript file."
   spec.homepage      = "https://github.com/ksauraj/stygian"
   spec.license       = "MIT"
 
