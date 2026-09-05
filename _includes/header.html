@@ -1,4 +1,5 @@
 {%- assign aux = site.stygian.header.aux_links | default: nil -%}
+{%- assign aux_new = site.stygian.header.aux_links_new_tab | default: false -%}
 <header class="site-header">
   <div class="site-header__inner">
     <div class="site-header__left">
@@ -21,7 +22,7 @@
       </button>
       {% if aux %}
         {% for link in aux %}
-          <a class="aux-link" href="{{ link.href }}" target="_blank" rel="noopener noreferrer">{{ link.label }}</a>
+          <a class="aux-link" href="{{ link.href }}"{% if aux_new %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a>
         {% endfor %}
       {% endif %}
       <button type="button"
@@ -34,4 +35,5 @@
       </button>
     </div>
   </div>
+  {% include header_custom.html %}
 </header>

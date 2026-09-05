@@ -43,12 +43,14 @@
   }
 
   /* Theme swap: circular reveal from the click point via View
-     Transitions. No post-transition ripple of any kind. */
+     Transitions. No post-transition ripple of any kind. Mermaid diagrams
+     are re-rendered with the new theme once the reveal has finished. */
   function toggleTheme(originX, originY) {
     var current = getTheme();
     var next = current === 'dark' ? 'light' : 'dark';
 
     var applyTheme = function () { setTheme(next, true); };
+    var refreshDiagrams = function () { renderMermaidDiagrams(); };
 
     // Circular reveal parameters (origin + radius as CSS variables).
     var origin = {
@@ -65,12 +67,18 @@
 
     if (reduceMotion() || typeof doc.startViewTransition !== 'function') {
       applyTheme();
+      refreshDiagrams();
       return;
     }
 
-    doc.startViewTransition(function () {
+    var transition = doc.startViewTransition(function () {
       applyTheme();
     });
+    if (transition && transition.finished && typeof transition.finished.then === 'function') {
+      transition.finished.then(refreshDiagrams);
+    } else {
+      refreshDiagrams();
+    }
   }
 
   function initTheme() {
@@ -86,6 +94,7 @@
         if (!useTransition) {
           var current = getTheme();
           setTheme(current === 'dark' ? 'light' : 'dark', true);
+          renderMermaidDiagrams();
           return;
         }
         toggleTheme(x, y);
@@ -221,6 +230,31 @@
    * MERMAID (lazy, only when a ```mermaid fence exists)
    * ================================================================== */
 
+  // Render every pending diagram with the palette matching the active
+  // theme. The chart source stays in data-chart so diagrams can be
+  // re-rendered after a theme switch (SVG colors are baked at render
+  // time, so a stale diagram goes faint when the theme flips).
+  function renderMermaidDiagrams() {
+    var diagrams = doc.querySelectorAll('.mermaid-diagram[data-chart]');
+    if (!diagrams.length || !window.mermaid) return;
+    try {
+      window.mermaid.initialize({
+        startOnLoad: false,
+        theme: getTheme() === 'dark' ? 'dark' : 'neutral',
+        fontFamily: "'Space Mono', monospace"
+      });
+    } catch (e) { return; }
+    diagrams.forEach(function (dia, i) {
+      var chart = dia.getAttribute('data-chart');
+      window.mermaid.render('mermaid-' + Date.now() + '-' + i, chart).then(function (res) {
+        if (!dia.isConnected) return;
+        dia.innerHTML = res.svg;
+      }).catch(function () {
+        if (dia.isConnected) dia.textContent = 'Mermaid failed to render this diagram.';
+      });
+    });
+  }
+
   function initMermaid() {
     var blocks = doc.querySelectorAll('pre > code.language-mermaid');
     if (!blocks.length) return;
@@ -241,20 +275,7 @@
     script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
     script.onload = function () {
       if (!window.mermaid) return;
-      window.mermaid.initialize({
-        startOnLoad: false,
-        theme: getTheme() === 'dark' ? 'dark' : 'neutral',
-        fontFamily: "'Space Mono', monospace"
-      });
-      doc.querySelectorAll('.mermaid-diagram[data-chart]').forEach(function (dia, i) {
-        var chart = dia.getAttribute('data-chart');
-        dia.removeAttribute('data-chart');
-        window.mermaid.render('mermaid-' + Date.now() + '-' + i, chart).then(function (res) {
-          dia.innerHTML = res.svg;
-        }).catch(function () {
-          dia.textContent = 'Mermaid failed to render this diagram.';
-        });
-      });
+      renderMermaidDiagrams();
     };
     doc.head.appendChild(script);
   }

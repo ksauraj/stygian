@@ -73,6 +73,7 @@ stygian:
   header:
     aux_links:
       - { label: GitHub, href: https://github.com/ksauraj/stygian }
+    aux_links_new_tab: true   # open header links in a new tab
   theme:
     default: dark        # fallback before the visitor's saved choice
     transition: true     # View Transition reveal on theme switch
