@@ -104,6 +104,20 @@ stygian:
 A floating button appears after 560 px of scrolling. The footer keeps
 its static `[ back to top ]` link either way.
 
+## Syntax highlighting
+
+```yaml
+stygian:
+  syntax_highlighting:
+    enabled: true   # colorize rouge tokens (default: false)
+```
+
+Code blocks are tokenized by Jekyll's rouge at build time (site-level
+`highlighter: rouge`). By default Stygian renders tokens in a
+monochrome fg hierarchy; set `enabled: true` to apply a full color
+palette that adapts to dark and light mode. Disable again by removing
+the key or setting it to `false` - the monochrome treatment returns.
+
 ## SEO
 
 ```yaml
