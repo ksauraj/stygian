@@ -1,6 +1,7 @@
 ---
 title: Customization
-nav_order: 4
+parent: Developer guide
+nav_order: 1
 lede: >
   Four ways to make Stygian yours: configuration, extension hooks,
   token overrides and full file shadows.

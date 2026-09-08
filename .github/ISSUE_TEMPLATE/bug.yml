@@ -1,0 +1,58 @@
+name: Bug report
+description: Report a bug in the Stygian theme
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Fill in as much as
+        you can - the reproduction is the most valuable part.
+  - type: input
+    id: theme-version
+    attributes:
+      label: Theme version
+      description: The ?v= query string on the stylesheet, or the theme commit SHA.
+      placeholder: "e.g. v14 or a1b2c3d"
+    validations:
+      required: true
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      options:
+        - remote_theme (GitHub Pages)
+        - theme: stygian (gem)
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: jekyll-version
+    attributes:
+      label: Jekyll version
+      placeholder: "e.g. 4.3.4"
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: The smallest _config.yml and markdown files that trigger the bug.
+      render: yaml
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Screenshots are welcome for visual bugs.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Browser, OS, mobile viewport width if relevant.

@@ -1,7 +1,7 @@
 ---
 title: Theming
-parent: customization
-nav_order: 1
+parent: Developer guide
+nav_order: 2
 lede: >
   Tokens, palettes and why light mode is designed rather than inverted.
 ---

@@ -41,9 +41,11 @@ Commit and push. GitHub Pages builds the site and publishes it. The
 `_docs/hello-world.md` file becomes a page at `/docs/hello-world/`, with
 a sidebar entry, a search hit and a breadcrumb.
 
-> **Tip:** the sidebar order comes from `nav_order` (lowest first). Ties
-> break alphabetically by title. Omit nothing: every page should declare
-> a `title` and a `nav_order`.
+> **Tip:** the sidebar order comes from `nav_order` (numbers first, then
+> strings, then alphabetical by title). Every page should declare a
+> `title` and a `nav_order`. Nest pages with `parent:` matched by the
+> parent page's title - see [Navigation](navigation) and
+> [Installation](installation).
 
 ## Or install the gem
 
@@ -66,7 +68,8 @@ bundle exec jekyll serve
 
 ## What you get for free
 
-- Ordered sidebar with nested pages (`parent:` front matter)
+- Ordered sidebar with nested pages (`parent:` front matter, matched by
+  title, unlimited depth, automatic child lists)
 - Search across all docs pages: click the magnifier or press `/`
 - Breadcrumbs and prev/next cards on every page
 - Dark and light themes with a saved preference and a circular reveal

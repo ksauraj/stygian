@@ -215,6 +215,8 @@
    * ================================================================== */
 
   function initHeadingAnchors() {
+    var cfg = readConfig();
+    if (cfg.anchors === false) return;
     doc.querySelectorAll('.sty-prose h2, .sty-prose h3, .sty-prose h4').forEach(function (h) {
       if (!h.id || h.querySelector('.anchor-link')) return;
       var a = doc.createElement('a');
@@ -272,7 +274,15 @@
     });
 
     var script = doc.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+    var cfg = readConfig();
+    var mermaidCfg = cfg.mermaid || {};
+    if (mermaidCfg.path) {
+      script.src = mermaidCfg.path;
+    } else if (mermaidCfg.version) {
+      script.src = 'https://cdn.jsdelivr.net/npm/mermaid@' + mermaidCfg.version + '/dist/mermaid.min.js';
+    } else {
+      script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js';
+    }
     script.onload = function () {
       if (!window.mermaid) return;
       renderMermaidDiagrams();

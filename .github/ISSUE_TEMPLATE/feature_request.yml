@@ -1,0 +1,41 @@
+name: Feature request
+description: Propose a feature or a compatibility gap to close
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the use case, not just the feature. Features that close
+        a gap against just-the-docs are tracked in GAP-ANALYSIS.md.
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Use case
+      description: What are you trying to do that Stygian cannot do today?
+    validations:
+      required: true
+  - type: dropdown
+    id: gap
+    attributes:
+      label: Does this close a just-the-docs gap?
+      options:
+        - "Yes"
+        - "No"
+        - "Not sure"
+    validations:
+      required: true
+  - type: input
+    id: gap-ref
+    attributes:
+      label: GAP-ANALYSIS.md reference
+      description: If yes, which row or milestone (e.g. v15 search parity)?
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Config keys, front matter or class names you expect.
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links, screenshots, or examples of the desired result.

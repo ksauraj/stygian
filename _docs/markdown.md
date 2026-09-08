@@ -1,6 +1,7 @@
 ---
 title: Markdown elements
-nav_order: 5
+parent: User guide
+nav_order: 4
 lede: >
   A torture test for the prose engine: every element this theme styles,
   rendered live from plain markdown. Read the source of this file to see

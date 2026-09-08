@@ -1,6 +1,7 @@
 ---
 title: SEO
-nav_order: 6
+parent: Developer guide
+nav_order: 4
 lede: >
   Automatic search-engine plumbing: structured data, Open Graph and
   metadata - on by default, one switch to turn it off.
