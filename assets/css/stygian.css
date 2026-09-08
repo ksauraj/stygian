@@ -699,7 +699,9 @@ html:active-view-transition footer {
 .sty-prose li { margin-top: 0.4rem; color: rgb(var(--color-fg-dim)); }
 .sty-prose li::marker { color: rgb(var(--color-muted)); font-family: 'Space Mono', monospace; }
 .sty-prose li > ul, .sty-prose li > ol { margin-top: 0.4rem; }
-.sty-prose ul { list-style: square; }
+.sty-prose ul { list-style: disc; }
+.sty-prose ul ul { list-style: circle; }
+.sty-prose ul ul ul { list-style: square; }
 .sty-prose ol { list-style: decimal; }
 
 /* task lists */

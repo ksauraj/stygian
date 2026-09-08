@@ -13,6 +13,11 @@ Legend:
 
 ## [Unreleased]
 
+### Changed
+
+- Unordered list bullets are circular (`disc`) instead of squares, with
+  `circle` / `square` for deeper nesting levels.
+
 ### Fixed
 
 - Header overflow on phones: text aux links are hidden from the header
