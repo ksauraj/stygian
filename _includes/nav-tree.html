@@ -1,0 +1,58 @@
+{%- comment -%}
+  Recursive navigation tree (JTD-compatible model). Parameters:
+    pages       - sorted list of pages at the current level
+    ancestors   - array of ancestor page titles
+    parenthood  - collection grouped by 'parent'
+    top_titles  - titles of top-level pages
+  Parents are matched by page TITLE first (just-the-docs convention),
+  falling back to the parent page's filename for legacy stygian sites.
+  Arbitrary nesting depth; children are always visible (no folding).
+{%- endcomment -%}
+{%- for node in include.pages -%}
+  {%- assign nav_children = '' | split: '' -%}
+  {%- if node.has_children != false -%}
+    {%- assign nav_candidates = include.parenthood | where: 'name', node.title | map: 'items' | first -%}
+    {%- if nav_candidates.size == 0 -%}
+      {%- assign node_file = node.path | split: '/' | last | remove: '.md' -%}
+      {%- assign nav_candidates = include.parenthood | where: 'name', node_file | map: 'items' | first -%}
+    {%- endif -%}
+    {%- if nav_candidates -%}
+      {%- for nav_child in nav_candidates -%}
+        {%- assign nav_child_ok = true -%}
+        {%- if nav_child.nav_exclude == true -%}
+          {%- assign nav_child_ok = false -%}
+        {%- endif -%}
+        {%- if nav_child.grand_parent and nav_child.grand_parent != node.parent -%}
+          {%- assign nav_child_ok = false -%}
+        {%- endif -%}
+        {%- if nav_child.ancestor and nav_child.ancestor != node.title -%}
+          {%- unless include.ancestors contains nav_child.ancestor -%}
+            {%- assign nav_child_ok = false -%}
+          {%- endunless -%}
+        {%- endif -%}
+        {%- if nav_child.grand_parent == nil and nav_child.ancestor == nil and include.top_titles contains nav_child.parent and include.ancestors.size >= 1 -%}
+          {%- assign nav_child_ok = false -%}
+        {%- endif -%}
+        {%- if nav_child_ok -%}
+          {%- assign nav_children = nav_children | push: nav_child -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+    {%- if nav_children.size > 0 -%}
+      {%- include nav-sort.html pages=nav_children -%}
+      {%- assign nav_children = nav_sorted -%}
+    {%- endif -%}
+  {%- endif -%}
+
+  {%- assign is_active = false -%}
+  {%- if page.url == node.url -%}{%- assign is_active = true -%}{%- endif -%}
+  <li class="{% if is_active %}active{% endif %}">
+    <a href="{{ node.url | relative_url }}"{% if is_active %} aria-current="page"{% endif %}>{{ node.title }}</a>
+    {%- if nav_children.size > 0 -%}
+      <ul class="docs__nav-list docs__nav-list--child">
+        {%- assign nav_ancestors = include.ancestors | push: node.title -%}
+        {%- include nav-tree.html pages=nav_children ancestors=nav_ancestors parenthood=include.parenthood top_titles=include.top_titles -%}
+      </ul>
+    {%- endif -%}
+  </li>
+{%- endfor -%}

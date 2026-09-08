@@ -12,6 +12,7 @@ def build_site
   cfg = Jekyll.configuration(
     "source" => ROOT,
     "destination" => dest,
+    "config" => File.join(ROOT, "_config.demo.yml"),
     "baseurl" => "",
     "url" => "https://example.com",
     "quiet" => true,

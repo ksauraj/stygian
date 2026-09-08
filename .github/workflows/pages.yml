@@ -26,7 +26,7 @@ jobs:
           ruby-version: "3.2"
           bundler-cache: true
       - name: Build site
-        run: bundle exec jekyll build --baseurl "/${{ github.event.repository.name }}"
+        run: bundle exec jekyll build --config _config.demo.yml --baseurl "/${{ github.event.repository.name }}"
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

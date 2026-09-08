@@ -2,12 +2,14 @@
 layout: page
 title: Stygian
 lede: >
-  A modern, just-the-docs-style theme for Jekyll documentation sites on
-  GitHub Pages - sidebar navigation, prev/next browsing and cinematic
-  dark/light themes with a binary-ripple transition. No frameworks, no
-  build step, plain CSS variables and one vanilla JS file.
+  A modern, just-the-docs-compatible theme for Jekyll documentation
+  sites on GitHub Pages - sidebar navigation, prev/next browsing,
+  cinematic dark/light themes, zero-plugin search and automatic SEO.
+  No frameworks, no build step, plain CSS variables and one vanilla
+  JS file.
 ---
 [Getting started]({{ '/docs/getting-started/' | relative_url }}){: .btn }
+[Migrate from just-the-docs]({{ '/docs/migration-from-just-the-docs/' | relative_url }}){: .btn .btn-outline }
 [See it on GitHub](https://github.com/ksauraj/stygian){: .btn .btn--ghost }
 
 ## What you're looking at

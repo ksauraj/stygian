@@ -2,14 +2,28 @@
 # Default chrome: <html>/<head>, header bar, main content, small footer.
 ---
 <!DOCTYPE html>
-<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="{{ site.stygian.theme.default | default: 'dark' }}" data-highlighting="{% if site.stygian.syntax_highlighting.enabled == true %}on{% else %}off{% endif %}" class="no-js">
+<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="{{ site.stygian.theme.default | default: site.color_scheme | default: 'dark' }}" data-highlighting="{% if site.stygian.syntax_highlighting.enabled == true %}on{% else %}off{% endif %}" class="no-js">
   {% include head.html %}
-  {%- capture sty_cfg -%}{"theme":{"transition":{% if site.stygian.theme.transition == false %}false{% else %}true{% endif %}},"search":{"enabled":{% if site.stygian.search.enabled == false %}false{% else %}true{% endif %},"placeholder":{{ site.stygian.search.placeholder | default: "Search docs" | jsonify }},"baseurl":{{ site.baseurl | jsonify }}},"back_to_top":{% if site.stygian.back_to_top == false %}false{% else %}true{% endif %}}{%- endcapture -%}
+  {%- capture sty_cfg -%}{"theme":{"transition":{% if site.stygian.theme.transition == false %}false{% else %}true{% endif %}},"anchors":{% if site.heading_anchors == false %}false{% else %}true{% endif %},"search":{"enabled":{% if site.stygian.search.enabled == false or site.search_enabled == false %}false{% else %}true{% endif %},"placeholder":{{ site.stygian.search.placeholder | default: "Search docs" | jsonify }},"baseurl":{{ site.baseurl | jsonify }}},"back_to_top":{% if site.stygian.back_to_top == false or site.back_to_top == false %}false{% else %}true{% endif %},"mermaid":{% if site.mermaid %}{"version":{{ site.mermaid.version | jsonify }},"path":{{ site.mermaid.path | jsonify }}}{% else %}{}{% endif %}}{%- endcapture -%}
   <body id="top" class="bg-bg text-fg" data-sty-config='{{ sty_cfg | strip }}'>
     <script>document.documentElement.classList.remove('no-js');</script>
     <a class="skip-link" href="#main">Skip to content</a>
     {% include header.html %}
-    <main id="main">{{ content }}</main>
+    <main id="main">
+      {%- if page.layout != 'docs' -%}
+        {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+        {%- assign docs_mode = false -%}
+        {%- if page.collection == collection_name -%}{%- assign docs_mode = true -%}{%- endif -%}
+        {%- if page.parent or page.grand_parent or page.nav_order or page.has_children or page.has_toc -%}{%- assign docs_mode = true -%}{%- endif -%}
+        {%- if docs_mode -%}
+          {%- include docs-shell.html show_prev_next=false -%}
+        {%- else -%}
+          {{ content }}
+        {%- endif -%}
+      {%- else -%}
+        {{ content }}
+      {%- endif -%}
+    </main>
     {% include site-footer.html %}
     <div class="search-overlay js-search-overlay" hidden role="dialog" aria-modal="true" aria-label="Search documentation"></div>
     <button type="button" class="back-to-top js-back-to-top" aria-label="Back to top" title="Back to top" hidden>

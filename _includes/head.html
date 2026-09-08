@@ -12,8 +12,12 @@
 <link rel="canonical" href="{{ canonical_url }}">
 <meta name="theme-color" content="#000000">
 
-<!-- favicon: a lone glyph in the dark -->
+<!-- favicon: a lone glyph in the dark, or the site's own favicon_ico -->
+{% if site.favicon_ico %}
+<link rel="icon" href="{{ site.favicon_ico | relative_url }}">
+{% else %}
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0d0d'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='16' font-weight='700' fill='%23fff' text-anchor='middle'%3E01%3C/text%3E%3C/svg%3E">
+{% endif %}
 
 {% if seo_enabled %}
 <meta property="og:title" content="{% if page_title %}{{ page_title | escape }}{% else %}{{ site_title | escape }}{% endif %}">
@@ -43,7 +47,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap">
 
 <!-- Theme styles (versioned to bust GitHub Pages' 10-minute asset cache) -->
-<link rel="stylesheet" href="{{ '/assets/css/stygian.css' | relative_url }}?v=13">
+<link rel="stylesheet" href="{{ '/assets/css/stygian.css' | relative_url }}?v=14">
 
 <!-- Pre-paint theme boot: apply the saved theme before first render (no flash) -->
 <script>

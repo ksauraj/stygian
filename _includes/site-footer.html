@@ -1,12 +1,40 @@
 {%- assign note = site.stygian.footer.note | default: site.title | default: 'Stygian' -%}
 {%- assign right = site.stygian.footer.right | default: '' -%}
+{%- comment -%} JTD compatibility: gh_edit_link family (only when the native
+   stygian.edit link is not already rendered in the docs title bar) {%- endcomment -%}
+{%- assign gh_edit_link = false -%}
+{%- if site.gh_edit_link == true and site.stygian.edit.enabled != true -%}
+  {%- assign gh_edit_link = true -%}
+  {%- assign gh_repo = site.gh_edit_repository | default: '' -%}
+  {%- assign gh_branch = site.gh_edit_branch | default: 'main' -%}
+  {%- assign gh_mode = site.gh_edit_view_mode | default: 'tree' -%}
+  {%- assign gh_source = site.gh_edit_source | default: '' -%}
+  {%- assign gh_text = site.gh_edit_link_text | default: 'Edit this page on GitHub.' -%}
+{%- endif -%}
+{%- comment -%} JTD compatibility: last_edit_timestamp (needs last_modified_date
+   in the page front matter) {%- endcomment -%}
+{%- assign last_edit = false -%}
+{%- if site.last_edit_timestamp == true and page.last_modified_date -%}
+  {%- assign last_edit = true -%}
+  {%- assign last_edit_format = site.last_edit_time_format | default: '%b %e %Y at %I:%M %p' -%}
+{%- endif -%}
 <footer class="site-footer">
   <div class="site-footer__inner">
-    <p class="mono-xs">{{ note }}</p>
-    {% if right != '' %}
+    <p class="mono-xs">{% if site.footer_content %}{{ site.footer_content }}{% else %}{{ note }}{% endif %}</p>
+    {% if right != '' and site.footer_content == nil %}
       <p class="mono-xs">{{ right }}</p>
     {% endif %}
     <a class="mono-xs site-footer__top" href="#top">[ ↑ back to top ]</a>
   </div>
+  {% if gh_edit_link or last_edit %}
+    <div class="site-footer__meta">
+      {% if last_edit %}
+        <span class="mono-xs">Last modified: {{ page.last_modified_date | date: last_edit_format }}</span>
+      {% endif %}
+      {% if gh_edit_link %}
+        <a class="mono-xs" href="{{ gh_repo }}/{{ gh_mode }}/{{ gh_branch }}{% if gh_source != '' %}/{{ gh_source }}{% endif %}/{{ page.path }}" target="_blank" rel="noopener noreferrer">{{ gh_text }}</a>
+      {% endif %}
+    </div>
+  {% endif %}
   {% include footer_custom.html %}
 </footer>

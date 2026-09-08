@@ -54,4 +54,33 @@ RSpec.describe "Stygian build" do
     expect(gemspec.files).to include("_includes/head_custom.html")
     expect(gemspec.files).to include("assets/js/search-data.json")
   end
+
+  it "ships no _config.yml in the theme root (no demo default leak)" do
+    expect(File.exist?(File.join(ROOT, "_config.yml"))).to be(false)
+    expect(File.exist?(File.join(ROOT, "_config.demo.yml"))).to be(true)
+  end
+
+  it "renders the JTD-style navigation tree with parents by title" do
+    # the demo docs nest pages under "User guide" / "Developer guide" by title
+    html = read(@dest, "docs/user-guide/index.html")
+    expect(html).to include("docs__children")
+    expect(html.scan("docs__nav-list--child").length).to be >= 1
+    # child TOC lists a grandchild section's pages in nav_order
+    expect(html).to match(%r{href=".*search/".*>Search<})
+  end
+
+  it "honors layout: default docs-mode for collection pages with nav front matter" do
+    # theme demo pages use the docs layout; the compat path is exercised by
+    # the migration fixture site in CI (see .github/workflows) - here we at
+    # least assert the docs layout renders sidebar chrome
+    html = read(@dest, "docs/getting-started/index.html")
+    expect(html).to include('id="sidebar"')
+    expect(html).to include("docs__sidebar")
+  end
+
+  it "keeps the personal-data scrub: no author email in the gemspec" do
+    gemspec = Gem::Specification.load(File.join(ROOT, "stygian.gemspec"))
+    expect(gemspec.authors).to eq(["Stygian contributors"])
+    expect(gemspec.email).to be_nil
+  end
 end

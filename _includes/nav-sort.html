@@ -1,0 +1,71 @@
+{%- comment -%}
+  Navigation sort (JTD-compatible). Parameters: pages (array).
+  Assigns: nav_sorted.
+
+  Sibling ordering:
+  - explicit `nav_order` values first: numbers (int/float) before strings
+  - then pages without `nav_order`, ordered by `title` (numbers, then strings)
+  - string comparisons honor `nav_sort: case_insensitive`
+  - ties fall back to insertion order (stable enough for docs sites)
+{%- endcomment -%}
+{%- assign nav_order_pages = include.pages | where_exp: 'item', 'item.nav_order != nil' -%}
+{%- assign title_order_pages = include.pages | where_exp: 'item', 'item.nav_order == nil' -%}
+
+{%- assign double_quote = '"' -%}
+{%- assign empty_array = '' | split: '' -%}
+
+{%- assign nav_string_pages = empty_array -%}
+{%- assign nav_number_pages = empty_array -%}
+{%- unless nav_order_pages == empty -%}
+  {%- assign nav_order_groups = nav_order_pages
+        | group_by_exp: 'item',
+            'item.nav_order | jsonify | slice: 0 | remove: double_quote | size' -%}
+  {%- for group in nav_order_groups -%}
+    {%- if group.name == 0 -%}
+      {%- assign nav_string_pages = group.items -%}
+    {%- elsif group.name == 1 -%}
+      {%- assign nav_number_pages = group.items -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endunless -%}
+
+{%- assign title_string_pages = empty_array -%}
+{%- assign title_number_pages = empty_array -%}
+{%- unless title_order_pages == empty -%}
+  {%- assign title_order_groups = title_order_pages
+        | group_by_exp: 'item',
+            'item.title | jsonify | slice: 0 | remove: double_quote | size' -%}
+  {%- for group in title_order_groups -%}
+    {%- if group.name == 0 -%}
+      {%- assign title_string_pages = group.items -%}
+    {%- elsif group.name == 1 -%}
+      {%- assign title_number_pages = group.items -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endunless -%}
+
+{%- unless nav_number_pages == empty -%}
+  {%- assign nav_number_pages = nav_number_pages | sort: 'nav_order' -%}
+{%- endunless -%}
+{%- unless nav_string_pages == empty -%}
+  {%- if site.nav_sort == 'case_insensitive' -%}
+    {%- assign nav_string_pages = nav_string_pages | sort_natural: 'nav_order' -%}
+  {%- else -%}
+    {%- assign nav_string_pages = nav_string_pages | sort: 'nav_order' -%}
+  {%- endif -%}
+{%- endunless -%}
+{%- unless title_number_pages == empty -%}
+  {%- assign title_number_pages = title_number_pages | sort: 'title' -%}
+{%- endunless -%}
+{%- unless title_string_pages == empty -%}
+  {%- if site.nav_sort == 'case_insensitive' -%}
+    {%- assign title_string_pages = title_string_pages | sort_natural: 'title' -%}
+  {%- else -%}
+    {%- assign title_string_pages = title_string_pages | sort: 'title' -%}
+  {%- endif -%}
+{%- endunless -%}
+
+{%- assign nav_sorted = nav_number_pages
+      | concat: nav_string_pages
+      | concat: title_number_pages
+      | concat: title_string_pages -%}

@@ -1,45 +1,53 @@
 # Stygian
 
-A modern docs-first theme for Jekyll and GitHub Pages. Drop markdown into
-a docs collection, get a documentation site with search, dark/light
-themes, breadcrumbs, prev/next paging and automatic SEO. No frameworks,
+A modern docs-first theme for Jekyll and GitHub Pages, built as a
+drop-in alternative to just-the-docs: same front matter, same config
+keys, same component classes - plus dark/light visitor theming,
+automatic SEO, prev/next paging and code copy buttons. No frameworks,
 no build step: CSS custom properties plus one vanilla JavaScript file.
+
+[![CI](https://github.com/ksauraj/stygian/actions/workflows/ci.yml/badge.svg)](https://github.com/ksauraj/stygian/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **Live demo:** <https://ksauraj.github.io/stygian>
 
 ## Why Stygian
-
-Stygian is built in the spirit of just-the-docs but modernized:
 
 | Capability | Stygian | just-the-docs |
 | --- | --- | --- |
 | Dark/light themes | Built-in pair, visitor toggle, saved preference | Per-site color scheme, no visitor toggle |
 | Theme switch | View Transitions circular reveal | Instant |
 | Search | Client-side, no plugin, `/` shortcut | Plugin-free index, overlay |
+| Migration | JTD front matter + config keys work as-is | - |
 | Breadcrumbs | Every docs page | Nested pages only |
+| Prev/next paging | Every docs page | Not available |
 | Inline code | Atomic chips, never split at hyphens | Can split tokens mid-word |
 | SEO | Auto JSON-LD + Open Graph, switchable | Manual |
-| Page caching | Versioned assets (`?v=N`) | Plain URLs |
+| Syntax highlighting | Optional, dark/light aware | Built-in |
 | Dependencies | Zero (one vanilla JS file) | One JS file + vendor |
 
 ## Features
 
 Content engine
 
-- Ordered sidebar navigation: `nav_order`, one-level `parent` nesting,
-  `nav_exclude`, active state and collapsible mobile drawer
+- Just-the-docs compatible navigation: parents by page title,
+  unlimited depth, `nav_order` as numbers or strings, `nav_sort`,
+  `nav_exclude`, `has_toc`, automatic child lists on parent pages,
+  external nav links, `nav_enabled` global toggle
 - Breadcrumbs (Home / section / page) and prev/next page cards
 - Client-side search across the docs collection: header magnifier or `/`
-  shortcut, ranked results, `<mark>` highlights, snippets, arrow keys and
-  Enter to open
-- Prose engine: callouts (`{: .callout }`), scrollable tables, code
-  blocks with copy buttons, lazy Mermaid diagrams, heading anchors
-- "Edit this page on GitHub" links driven by config
+  shortcut, ranked results, `<mark>` highlights, snippets, arrow keys
+- Prose engine: buttons, labels and callouts with JTD class names,
+  scrollable tables, code blocks with copy buttons and optional line
+  numbers, lazy theme-aware Mermaid, heading anchors
+- "Edit this page on GitHub" links (native `stygian.edit` or JTD
+  `gh_edit_link`)
 - Back-to-top button
 
 Theming and motion
 
-- Dark and light design systems on CSS custom properties
+- Dark and light design systems on CSS custom properties, `color_scheme`
+  alias for JTD sites
 - Saved theme preference (localStorage) with no-flash boot
 - View Transitions circular reveal on theme switch
 - Restrained flicker/glare accents; everything disabled under
@@ -47,11 +55,9 @@ Theming and motion
 
 SEO and publishing
 
-- `stygian.seo.enabled` (default on): WebSite JSON-LD, BreadcrumbList
-  JSON-LD on docs pages, Open Graph, Twitter card, optional
-  `stygian.seo.image`
-- Automatic description and canonical URL; sitemap via `jekyll-sitemap`
-  when you add it
+- Automatic WebSite + BreadcrumbList JSON-LD, Open Graph, Twitter card
+- Automatic description and canonical URL
+- Optional rouge syntax highlighting (`stygian.syntax_highlighting`)
 - Versioned assets so Pages deploys never serve stale CSS/JS
 
 Engineering
@@ -60,9 +66,9 @@ Engineering
 - Extension hooks: `head_custom`, `header_custom`, `footer_custom`,
   `nav_footer_custom` - shadow them in your site's `_includes/`
 - RSpec smoke suite that builds the demo site and asserts output
-  invariants; CI matrix; gem-publish workflow on tags
-- Immutable SemVer releases (alpha, beta, rc, stable) - see
-  [CHANGELOG.md](CHANGELOG.md)
+  invariants; CI matrix on Ruby 3.2/3.3
+- Gap analysis and roadmap against just-the-docs:
+  [GAP-ANALYSIS.md](GAP-ANALYSIS.md)
 
 ## Quick start (GitHub Pages)
 
@@ -73,9 +79,21 @@ remote_theme: ksauraj/stygian
 
 title: My docs
 description: Short site description used for SEO meta.
+
+collections:
+  docs:
+    output: true
+    permalink: /:path/
+
+defaults:
+  - scope:
+      path: ""
+      type: docs
+    values:
+      layout: docs
 ```
 
-Create `_docs/` and drop markdown files in it. Each file becomes a page:
+Create `_docs/` and drop markdown files in it:
 
 ```markdown
 ---
@@ -83,36 +101,32 @@ title: Installation
 nav_order: 2
 ---
 
-# Installation
-
 Your content here. Front matter `title` and `nav_order` drive the sidebar.
 ```
 
-Then commit and push; GitHub Pages renders the site. Layout and URLs:
+Commit and push; GitHub Pages renders the site.
 
-- `_docs/foo.md` renders at `/docs/foo/`
-- `layout: docs` is applied automatically via config defaults
+## Migrating from just-the-docs
 
-## Quick start (Ruby gem)
-
-```ruby
-# Gemfile
-gem "stygian"
-```
+Point the remote theme at Stygian. Your front matter, config keys,
+buttons, labels and callouts keep working:
 
 ```yaml
-# _config.yml
-theme: stygian
+# before
+remote_theme: just-the-docs/just-the-docs
+
+# after
+remote_theme: ksauraj/stygian
 ```
 
-```shell
-bundle
-bundle exec jekyll serve
-```
+See the full guide: [Migration from just-the-docs](https://ksauraj.github.io/stygian/docs/migration-from-just-the-docs/).
 
 ## Configuration
 
-Everything lives under the `stygian:` key:
+Everything native lives under the `stygian:` key; just-the-docs keys
+(`aux_links`, `color_scheme`, `search_enabled`, `heading_anchors`,
+`nav_sort`, `nav_external_links`, `footer_content`, `gh_edit_link`,
+`logo`, `favicon_ico`, `mermaid`, ...) are honored as aliases.
 
 ```yaml
 stygian:
@@ -129,6 +143,8 @@ stygian:
   search:
     enabled: true
     placeholder: Search docs
+  syntax_highlighting:
+    enabled: true        # optional rouge token colors (dark/light aware)
   back_to_top: true
   seo:
     enabled: true
@@ -143,9 +159,10 @@ stygian:
     right: "Copyright and so on"
 ```
 
-Per-page front matter: `title`, `nav_order`, `nav_exclude`, `parent`,
-`lede` (subtitle under the H1), `description` (SEO override), `hide` a
-page from search with `search_exclude`.
+Per-page front matter: `title`, `nav_order` (number or string),
+`parent` (by title), `grand_parent`, `has_children`, `has_toc`,
+`nav_exclude`, `search_exclude`, `lede` (subtitle under the H1),
+`description` (SEO override).
 
 ## Extending
 
@@ -153,23 +170,36 @@ page from search with `search_exclude`.
   `_includes/header_custom.html`, `_includes/footer_custom.html` or
   `_includes/nav_footer_custom.html` in your site; your file shadows the
   theme's empty hook and is rendered in the matching place.
-- **Theming** - override the CSS custom properties, e.g. in a
+- **Theming** - override the CSS custom properties in a
   `head_custom.html` include. The full token list lives in the
-  [Theming](https://ksauraj.github.io/stygian/docs/theming/) doc.
+  Theming doc.
 - **Code** - the theme is one CSS file and one JS file under `assets/`;
   copy them into your site to fork the styling entirely.
+
+## Contributing
+
+Bug reports, docs fixes and feature implementations are welcome. See
+[CONTRIBUTING.md](CONTRIBUTING.md), the
+[Contributing](https://ksauraj.github.io/stygian/docs/contributing/) doc
+and the issue templates. All contributors are expected to follow the
+[Contributor Covenant](CODE_OF_CONDUCT.md); security issues go through
+the [security advisory workflow](SECURITY.md).
 
 ## Development
 
 ```shell
 bundle install
-bundle exec jekyll serve   # this repo is itself the demo site
-bundle exec rspec          # build smoke tests
+bundle exec jekyll serve --config _config.demo.yml   # this repo is itself the demo site
+bundle exec rake spec      # build smoke tests
 node --check assets/js/stygian.js
 ```
 
-Releases are cut from version tags (`v0.1.0`, `v0.2.0-beta1`, ...) by
-the publish workflow; see [CHANGELOG.md](CHANGELOG.md).
+The demo site has its own `_config.demo.yml` so the theme root ships no
+`_config.yml`: consumers never inherit demo defaults (Jekyll merges a
+theme's `_config.yml` when present).
+
+Asset releases bump `?v=N` in `_includes/head.html` and
+`_includes/scripts.html`; see [CHANGELOG.md](CHANGELOG.md).
 
 ## License
 

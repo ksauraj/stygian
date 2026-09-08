@@ -104,6 +104,36 @@ stygian:
 A floating button appears after 560 px of scrolling. The footer keeps
 its static `[ back to top ]` link either way.
 
+## Site logo and favicon
+
+Just-the-docs compatible keys, honored as-is:
+
+```yaml
+# header logo image (replaces the title glyph and text)
+logo: /assets/images/logo.png
+
+# custom favicon
+favicon_ico: /assets/images/favicon.ico
+```
+
+## Color scheme
+
+```yaml
+# just-the-docs key (alias for stygian.theme.default)
+color_scheme: dark   # or: light
+```
+
+```yaml
+# native key
+stygian:
+  theme:
+    default: dark
+```
+
+When both are set, `stygian.theme.default` wins. The default is `dark`
+(sites migrating from just-the-docs that want the JTD default look
+should set `color_scheme: light`).
+
 ## Syntax highlighting
 
 ```yaml
@@ -117,6 +147,80 @@ Code blocks are tokenized by Jekyll's rouge at build time (site-level
 monochrome fg hierarchy; set `enabled: true` to apply a full color
 palette that adapts to dark and light mode. Disable again by removing
 the key or setting it to `false` - the monochrome treatment returns.
+
+## Search aliases
+
+The just-the-docs search keys work as aliases:
+
+```yaml
+search_enabled: true   # alias for stygian.search.enabled
+```
+
+## Heading anchors
+
+```yaml
+# anchor links on hover for h2-h4 (default: true)
+heading_anchors: true
+```
+
+## Aux links (both formats)
+
+```yaml
+# just-the-docs format: a hash of label -> url
+aux_links:
+  "GitHub": "https://github.com/you/repo"
+  "Releases": "https://github.com/you/repo/releases"
+aux_links_new_tab: true
+```
+
+```yaml
+# native format: a list of {label, href}
+stygian:
+  header:
+    aux_links:
+      - { label: GitHub, href: https://github.com/you/repo }
+```
+
+## Footer compat keys
+
+```yaml
+# footer content (HTML allowed); replaces the note text
+footer_content: "Copyright &copy; 2026 You"
+
+# last-modified timestamp; requires page front matter `last_modified_date`
+last_edit_timestamp: true
+last_edit_time_format: "%b %e %Y at %I:%M %p"
+
+# edit link in the footer (rendered when stygian.edit is not configured)
+gh_edit_link: true
+gh_edit_link_text: "Edit this page on GitHub."
+gh_edit_repository: "https://github.com/you/repo"
+gh_edit_branch: "main"
+gh_edit_view_mode: "tree"
+```
+
+## Mermaid version
+
+```yaml
+# pin the mermaid library version (jsDelivr), or load it from a local path
+mermaid:
+  version: "11.4.1"
+  # path: /assets/js/mermaid.min.js
+```
+
+Without this key the theme loads mermaid 11 from jsDelivr.
+
+## Navigation extras
+
+```yaml
+# sidebar toggle + external links + case-insensitive string ordering
+nav_enabled: true
+nav_external_links:
+  - title: Releases
+    url: https://github.com/you/repo/releases
+nav_external_links_new_tab: true
+nav_sort: case_insensitive
+```
 
 ## SEO
 

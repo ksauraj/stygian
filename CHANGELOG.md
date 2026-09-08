@@ -15,14 +15,49 @@ Legend:
 
 ### Added
 
-- Optional syntax highlighting: `stygian.syntax_highlighting.enabled`
-  (default off) applies a dark/light-aware rouge token color palette;
-  without it code keeps the monochrome fg treatment.
+- **Just-the-docs compatibility layer**:
+  - Navigation engine rewritten to the JTD model: parents matched by
+    page title (legacy filename fallback), unlimited nesting depth via
+    recursive include, `nav_order` as numbers and strings (numbers
+    first, then strings, then title alphabetical), `nav_sort:
+    case_insensitive`, `grand_parent`/`ancestor` disambiguation,
+    `has_children` accepted (derived), automatic child table of
+    contents on parent pages, `has_toc: false`, external nav links
+    (`nav_external_links` + `nav_external_links_new_tab`), global
+    sidebar toggle (`nav_enabled` / `stygian.nav.enabled` with page
+    overrides).
+  - Config aliases honored alongside the native `stygian:` block:
+    `aux_links` (hash) and `aux_links_new_tab`, `color_scheme`,
+    `search_enabled`, `heading_anchors`, `back_to_top`,
+    `footer_content`, `last_edit_timestamp` + `last_edit_time_format`,
+    `gh_edit_link` family, `logo`, `favicon_ico`, `mermaid.version` /
+    `mermaid.path`, `callouts` (named callouts), `nav_sort`.
+  - JTD UI classes: buttons (`.btn-purple/.btn-blue/.btn-green/
+    .btn-red/.btn-yellow/.btn-outline/.btn-primary`, `.btn-sm`,
+    `.btn-xs`), labels (`.label` + color variants), callouts
+    (`.note/.tip/.warning/.important` + `-title` variants), code line
+    numbers (`.lineno`), typography scale (`.fs-1`..`.fs-10`,
+    `.fw-300..700`, `.text-center/left/right`, `.text-mono`,
+    `.text-delta`, `.d-inline-block`), color utilities
+    (`.text-*`/`.bg-*` over the JTD palette).
+  - `layout: default` renders the sidebar layout for pages in the docs
+    collection or with nav front matter; new `layout: minimal` alias;
+    `layout: page` unchanged.
+- Extensive documentation: the demo docs now mirror the JTD structure
+  (Getting started / Configuration / Navigation / User guide /
+  Developer guide / FAQ), including a step-by-step
+  migration-from-just-the-docs guide, search, UI components, utilities
+  and contributing pages.
+- Collaboration tooling: CONTRIBUTING.md, CODE_OF_CONDUCT.md,
+  SECURITY.md, issue templates (bug + feature request), PR template,
+  GAP-ANALYSIS.md with roadmap, README overhaul.
+- Personal data removed from the gem spec and demo footer.
 
 ### Changed
 
 - Unordered list bullets are circular (`disc`) instead of squares, with
   `circle` / `square` for deeper nesting levels.
+- Mermaid is loaded per `mermaid.version` / `mermaid.path` when set.
 
 ### Fixed
 

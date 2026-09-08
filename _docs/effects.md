@@ -1,7 +1,7 @@
 ---
 title: Effects and transitions
-parent: customization
-nav_order: 2
+parent: Developer guide
+nav_order: 3
 lede: >
   What moves and glows in Stygian, and how every effect behaves for
   reduced-motion visitors.

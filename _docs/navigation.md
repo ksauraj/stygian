@@ -2,66 +2,125 @@
 title: Navigation
 nav_order: 3
 lede: >
-  How the sidebar orders and nests your pages, and how the prev/next links
-  are computed.
+  The sidebar model, compatible with just-the-docs: parents by title,
+  numbers or strings for nav_order, arbitrary depth, exclusions and
+  external links.
 ---
-## Ordering
 
-Pages sort by `nav_order` (lowest first). When two pages share a value they
-fall back to title order. Pages without `nav_order` are kept in document
-order after the numbered ones. To place a page last explicitly:
+Every page in the docs collection appears in the sidebar. Ordering,
+nesting and visibility are controlled with front matter on each page.
+
+## Ordering with nav_order
+
+`nav_order` accepts numbers (integers and floats) or strings:
 
 ```yaml
 ---
-title: Changelog
-nav_order: 999
----
-```
-
-## Nesting with `parent`
-
-A page becomes a child by pointing at the **basename** of its parent file,
-without the `.md` extension. Given this file layout:
-
-```text
-_docs/
-  getting-started.md
-  customization.md        <- key: customization
-  theming.md              <- parent: customization
-  effects.md              <- parent: customization
-```
-
-`customization.md` renders as a top-level entry and `theming.md` plus
-`effects.md` render nested beneath it, ordered by their own `nav_order`
-values. The parent page itself keeps its position with its own `nav_order`.
-
-```yaml
-# theming.md
----
-title: Theming
-parent: customization
+title: Installation
 nav_order: 1
 ---
 ```
 
-> **Note:** child keys must match the parent file basename exactly. The
-> engine supports one nesting level; put deeper structures in separate
-> top-level sections.
-{: .callout }
+```yaml
+---
+title: Alpha section
+nav_order: "a"
+---
+```
+
+Rules, identical to just-the-docs:
+
+- Pages with numeric `nav_order` come first, sorted numerically.
+- Then string `nav_order` values, sorted lexicographically.
+- Pages without `nav_order` come last, sorted by `title` (numbers
+  first, then strings).
+- Add `nav_sort: case_insensitive` in `_config.yml` to ignore case when
+  sorting strings.
+- Equal `nav_order` values fall back to insertion order.
+
+## Nesting with parent
+
+Set `parent` to the **title** of the parent page. Nesting depth is
+unlimited.
+
+```yaml
+---
+title: Search
+parent: User guide
+nav_order: 1
+---
+```
+
+Parents are matched by title first (just-the-docs convention). For
+backwards compatibility with older stygian sites, a `parent` that
+matches no page title falls back to matching the parent page's
+filename.
+
+Use `grand_parent` (or `ancestor` for deeper trees) only to
+disambiguate when two pages share a title:
+
+```yaml
+---
+title: Search
+parent: User guide
+grand_parent: User guide
+---
+```
+
+`has_children` is accepted but ignored: children are derived from the
+`parent` fields, exactly like just-the-docs.
+
+## Automatic child list
+
+A page with children renders a "Table of contents" list of links to
+them below its content. Disable it per page:
+
+```yaml
+---
+title: User guide
+has_toc: false
+---
+```
 
 ## Hiding pages
 
-Set `nav_exclude: true` to keep a page out of the sidebar. It stays
-published and linkable.
+```yaml
+---
+title: Internal notes
+nav_exclude: true
+---
+```
 
-## Prev / next
+Hidden pages and their subtrees disappear from the sidebar. They remain
+reachable by URL, and remain in the search index unless
+`search_exclude: true` is set.
 
-The bottom navigation flattens the tree in sidebar order: each parent is
-followed immediately by its children, then the next parent. The page you
-are reading now shows the pattern: previous links to `Configuration`, next
-links to `Customization`, whose children follow it in sequence.
+## External links
 
-## Active state
+Add external links at the bottom of the sidebar from `_config.yml`:
 
-The current page is highlighted in the sidebar, and its parent entry stays
-highlighted too, so a deep child never looks orphaned.
+```yaml
+nav_external_links:
+  - title: Releases
+    url: https://github.com/you/repo/releases
+nav_external_links_new_tab: true
+```
+
+## Disabling the sidebar globally
+
+```yaml
+nav_enabled: false
+```
+
+replaces the sidebar with a full-width content column everywhere.
+Enable the sidebar on a single page with `nav_enabled: true` in that
+page's front matter, or vice versa.
+
+The native equivalent is `stygian.nav.enabled`.
+
+## Collections
+
+`stygian.nav.collection` selects which collection feeds the sidebar
+(default `docs`). The sidebar title is `stygian.nav.title` (default
+`Docs`). Multi-collection categories (`just_the_docs.collections`) are
+not implemented yet; see `GAP-ANALYSIS.md`.
