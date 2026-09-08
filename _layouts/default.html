@@ -2,7 +2,7 @@
 # Default chrome: <html>/<head>, header bar, main content, small footer.
 ---
 <!DOCTYPE html>
-<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="{{ site.stygian.theme.default | default: 'dark' }}" class="no-js">
+<html lang="{{ page.lang | default: site.lang | default: 'en' }}" data-theme="{{ site.stygian.theme.default | default: 'dark' }}" data-highlighting="{% if site.stygian.syntax_highlighting.enabled == true %}on{% else %}off{% endif %}" class="no-js">
   {% include head.html %}
   {%- capture sty_cfg -%}{"theme":{"transition":{% if site.stygian.theme.transition == false %}false{% else %}true{% endif %}},"search":{"enabled":{% if site.stygian.search.enabled == false %}false{% else %}true{% endif %},"placeholder":{{ site.stygian.search.placeholder | default: "Search docs" | jsonify }},"baseurl":{{ site.baseurl | jsonify }}},"back_to_top":{% if site.stygian.back_to_top == false %}false{% else %}true{% endif %}}{%- endcapture -%}
   <body id="top" class="bg-bg text-fg" data-sty-config='{{ sty_cfg | strip }}'>

@@ -823,6 +823,78 @@ html:active-view-transition footer {
 .highlight .o, .highlight .p, .highlight .mi, .highlight .mf, .highlight .mh,
 .highlight .nl, .highlight .na, .highlight .nv { color: rgb(var(--color-muted)); }
 
+/* --------------------------------------------------------------------------
+   Syntax highlighting palette. Applied only when the site opts in via
+   `stygian.syntax_highlighting.enabled: true` (html[data-highlighting='on']);
+   the monochrome token treatment above stays the default. Two palettes,
+   dark and light, on a Space Mono friendly hue set.
+   -------------------------------------------------------------------------- */
+html[data-highlighting='on'] .highlight .c,
+html[data-highlighting='on'] .highlight .c1,
+html[data-highlighting='on'] .highlight .cm,
+html[data-highlighting='on'] .highlight .cs { color: #565f89; }
+html[data-highlighting='on'] .highlight .gd { color: #f7768e; }
+html[data-highlighting='on'] .highlight .gi { color: #9ece6a; }
+html[data-highlighting='on'] .highlight .gh { color: #c0caf5; font-weight: 500; }
+html[data-highlighting='on'] .highlight .k,
+html[data-highlighting='on'] .highlight .kd,
+html[data-highlighting='on'] .highlight .kn,
+html[data-highlighting='on'] .highlight .kp,
+html[data-highlighting='on'] .highlight .kr,
+html[data-highlighting='on'] .highlight .kt { color: #7aa2f7; font-weight: 500; }
+html[data-highlighting='on'] .highlight .nc,
+html[data-highlighting='on'] .highlight .nf { color: #7dcfff; }
+html[data-highlighting='on'] .highlight .nb { color: #bb9af7; }
+html[data-highlighting='on'] .highlight .na { color: #ffc777; }
+html[data-highlighting='on'] .highlight .nv { color: #c0caf5; }
+html[data-highlighting='on'] .highlight .nl { color: #bb9af7; }
+html[data-highlighting='on'] .highlight .s,
+html[data-highlighting='on'] .highlight .s1,
+html[data-highlighting='on'] .highlight .s2,
+html[data-highlighting='on'] .highlight .sb,
+html[data-highlighting='on'] .highlight .sa,
+html[data-highlighting='on'] .highlight .dl,
+html[data-highlighting='on'] .highlight .se,
+html[data-highlighting='on'] .highlight .sh { color: #9ece6a; }
+html[data-highlighting='on'] .highlight .o { color: #89ddff; }
+html[data-highlighting='on'] .highlight .p { color: #8896b4; }
+html[data-highlighting='on'] .highlight .mi,
+html[data-highlighting='on'] .highlight .mf,
+html[data-highlighting='on'] .highlight .mh { color: #ff9e64; }
+
+html[data-highlighting='on'][data-theme='light'] .highlight .c,
+html[data-highlighting='on'][data-theme='light'] .highlight .c1,
+html[data-highlighting='on'][data-theme='light'] .highlight .cm,
+html[data-highlighting='on'][data-theme='light'] .highlight .cs { color: #6e7781; }
+html[data-highlighting='on'][data-theme='light'] .highlight .gd { color: #cf222e; }
+html[data-highlighting='on'][data-theme='light'] .highlight .gi { color: #116329; }
+html[data-highlighting='on'][data-theme='light'] .highlight .gh { color: #0550ae; font-weight: 500; }
+html[data-highlighting='on'][data-theme='light'] .highlight .k,
+html[data-highlighting='on'][data-theme='light'] .highlight .kd,
+html[data-highlighting='on'][data-theme='light'] .highlight .kn,
+html[data-highlighting='on'][data-theme='light'] .highlight .kp,
+html[data-highlighting='on'][data-theme='light'] .highlight .kr,
+html[data-highlighting='on'][data-theme='light'] .highlight .kt { color: #8250df; font-weight: 500; }
+html[data-highlighting='on'][data-theme='light'] .highlight .nc,
+html[data-highlighting='on'][data-theme='light'] .highlight .nf { color: #0550ae; }
+html[data-highlighting='on'][data-theme='light'] .highlight .nb { color: #953800; }
+html[data-highlighting='on'][data-theme='light'] .highlight .na { color: #1a7f37; }
+html[data-highlighting='on'][data-theme='light'] .highlight .nv { color: #24292f; }
+html[data-highlighting='on'][data-theme='light'] .highlight .nl { color: #953800; }
+html[data-highlighting='on'][data-theme='light'] .highlight .s,
+html[data-highlighting='on'][data-theme='light'] .highlight .s1,
+html[data-highlighting='on'][data-theme='light'] .highlight .s2,
+html[data-highlighting='on'][data-theme='light'] .highlight .sb,
+html[data-highlighting='on'][data-theme='light'] .highlight .sa,
+html[data-highlighting='on'][data-theme='light'] .highlight .dl,
+html[data-highlighting='on'][data-theme='light'] .highlight .se,
+html[data-highlighting='on'][data-theme='light'] .highlight .sh { color: #0a3069; }
+html[data-highlighting='on'][data-theme='light'] .highlight .o { color: #0550ae; }
+html[data-highlighting='on'][data-theme='light'] .highlight .p { color: #57606a; }
+html[data-highlighting='on'][data-theme='light'] .highlight .mi,
+html[data-highlighting='on'][data-theme='light'] .highlight .mf,
+html[data-highlighting='on'][data-theme='light'] .highlight .mh { color: #b35900; }
+
 /* code block scrollbars */
 .highlight::-webkit-scrollbar { height: 10px; }
 .highlight::-webkit-scrollbar-track { background: rgb(var(--color-surface)); }

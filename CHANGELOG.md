@@ -13,6 +13,12 @@ Legend:
 
 ## [Unreleased]
 
+### Added
+
+- Optional syntax highlighting: `stygian.syntax_highlighting.enabled`
+  (default off) applies a dark/light-aware rouge token color palette;
+  without it code keeps the monochrome fg treatment.
+
 ### Changed
 
 - Unordered list bullets are circular (`disc`) instead of squares, with
