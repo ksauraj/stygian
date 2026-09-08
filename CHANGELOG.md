@@ -13,6 +13,14 @@ Legend:
 
 ## [Unreleased]
 
+### Fixed
+
+- Header overflow on phones: text aux links are hidden from the header
+  below 768px and re-surfaced at the bottom of the off-canvas drawer, the
+  site title ellipsizes when space runs out, and icon buttons never
+  shrink. Header no longer squeezes regardless of title length or number
+  of aux links.
+
 ## [0.1.0] - 2026-09-05
 
 Initial public theme, iterated against the live telectl docs site.

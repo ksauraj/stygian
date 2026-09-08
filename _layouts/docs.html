@@ -42,6 +42,17 @@ layout: default
       <button type="button" class="docs__close js-nav-close" aria-label="Close navigation">×</button>
     </div>
     {% include nav-list.html %}
+    {%- assign aux = site.stygian.header.aux_links | default: nil -%}
+    {%- if aux.size > 0 -%}
+      {%- assign aux_new = site.stygian.header.aux_links_new_tab | default: false -%}
+      <nav class="docs__aux" aria-label="External links">
+        <ul class="docs__aux-list">
+          {% for link in aux %}
+            <li><a href="{{ link.href }}"{% if aux_new %} target="_blank" rel="noopener noreferrer"{% endif %}>{{ link.label }}</a></li>
+          {% endfor %}
+        </ul>
+      </nav>
+    {%- endif -%}
   </aside>
   <div class="docs__scrim js-nav-scrim" hidden></div>
 
