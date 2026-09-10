@@ -8,67 +8,70 @@ Legend: [x] shipped, [~] partial / planned, [ ] missing.
 | JTD key | stygian key | Status |
 | --- | --- | --- |
 | `title`, `description`, `url`, `baseurl` | same | [x] |
-| `logo` (header logo image) | `logo` | [~] added v14 |
-| `favicon_ico` | `favicon_ico` | [~] added v14 |
+| `logo` (header logo image) | `logo` | [x] |
+| `favicon_ico` | `favicon_ico` | [x] |
 | `search_enabled` | `stygian.search.enabled` (+ alias) | [x] |
-| `search.heading_level`, `previews`, `preview_words_*` | fixed result rendering | [ ] |
-| `search.button` (floating search FAB) | - | [ ] |
-| `search.focus_shortcut_key` | `/` shortcut only | [ ] |
-| `search.tokenizer_separator` | - | [ ] |
-| `mermaid.version` / `mermaid.path` | hardcoded jsDelivr v11 | [~] configurable v14 |
+| `search.heading_level` | same (section index) | [x] |
+| `search.previews` / `preview_words_before` / `after` | same | [x] |
+| `search.button` (floating search FAB) | same | [x] |
+| `search.focus_shortcut_key` | same (ctrl/cmd + key) | [x] |
+| `search.tokenizer_separator` | same | [x] |
+| `mermaid.version` / `mermaid.path` | same | [x] |
 | `aux_links` (hash) / `aux_links_new_tab` | `stygian.header.aux_links` (list) | [x] both formats |
-| `nav_enabled` (global sidebar toggle) | `stygian.nav.enabled` (+ alias) | [~] added v14 |
-| `heading_anchors` | anchors always on | [~] configurable v14 |
-| `nav_external_links` / `nav_external_links_new_tab` | - | [~] added v14 |
-| `nav_sort: case_insensitive` | - | [~] added v14 |
-| `footer_content` | `stygian.footer.note/right` | [~] added v14 |
-| `last_edit_timestamp` / `last_edit_time_format` | - | [~] added v14 |
-| `gh_edit_link` family | `stygian.edit.*` | [~] added v14 (alias) |
-| `color_scheme` | `stygian.theme.default` (+ alias) | [~] added v14 |
-| `callouts: {name: {title, color}}` | `.callout` only | [~] added v14 (named callouts) |
-| `just_the_docs.collections.*` (name/nav_exclude/nav_fold/search_exclude) | `stygian.nav.collection` | [~] name + excludes; `nav_fold` [ ] |
+| `nav_enabled` (global sidebar toggle) | `stygian.nav.enabled` (+ alias) | [x] |
+| `heading_anchors` | same | [x] |
+| `nav_external_links` / `nav_external_links_new_tab` | same | [x] |
+| `nav_sort: case_insensitive` | same | [x] |
+| `footer_content` | `stygian.footer.note/right` | [x] |
+| `last_edit_timestamp` / `last_edit_time_format` | same | [x] |
+| `gh_edit_link` family | `stygian.edit.*` | [x] |
+| `color_scheme` | `stygian.theme.default` (+ alias) | [x] |
+| `callouts: {name: {title, color}}` | `.note/.tip/.warning/.important` built-in | [~] config-driven custom colors |
+| `just_the_docs.collections.*` (name/nav_exclude/nav_fold/search_exclude) | same | [x] |
 | `ga_tracking` | - | [ ] (intentionally: privacy-first theme) |
 
 ## Navigation model
 
 | JTD behavior | stygian | Status |
 | --- | --- | --- |
-| parent by page **title** (not filename) | filename | [~] v14: title first, filename fallback |
-| `grand_parent` / `ancestor` recursion, arbitrary depth | 1 level | [~] v14 |
-| `nav_order` numbers (int/float) + strings, numbers first | numbers only | [~] v14 |
-| default order = title alphabetical | - | [~] v14 |
-| `nav_sort: case_insensitive` | - | [~] v14 |
+| parent by page **title** (not filename) | same (+ legacy filename fallback) | [x] |
+| `grand_parent` / `ancestor` recursion, arbitrary depth | same | [x] |
+| `nav_order` numbers (int/float) + strings, numbers first | same | [x] |
+| default order = title alphabetical | same | [x] |
+| `nav_sort: case_insensitive` | same | [x] |
 | `nav_exclude` | same | [x] |
-| `has_children` (redundant in JTD) | ignored | [x] (engine derives children) |
-| auto child table of contents on parent pages | - | [~] v14 |
-| `has_toc: false` | - | [~] v14 |
-| external nav links | - | [~] v14 |
-| `nav_fold` collapsible collections | - | [ ] |
-| multiple collections as nav categories | single collection | [ ] |
+| `has_children` (redundant in JTD) | accepted (derived) | [x] |
+| auto child table of contents on parent pages | same | [x] |
+| `has_toc: false` | same | [x] |
+| external nav links | same | [x] |
+| `nav_fold` collapsible collections | same (expanded without JS) | [x] |
+| multiple collections as nav categories | same (`just_the_docs.collections`) | [x] |
+| regular pages rendered before collections | same | [x] |
 
 ## UI components
 
 | JTD | stygian | Status |
 | --- | --- | --- |
-| buttons: `.btn` + `.btn-purple/.btn-blue/.btn-green/.btn-red/.btn-yellow/.btn-outline/.btn-primary` | `.btn`, `.btn--ghost` | [~] v14 adds color variants |
-| labels: `.label` + color variants | `.label` (1 style) | [~] v14 adds variants |
-| callouts: `.note/.tip/.warning/.important` (+ `.name-title`) | `.callout` | [~] v14 adds JTD classes |
+| buttons: `.btn` + color variants + `.btn-outline` + sizes | same | [x] |
+| labels: `.label` + color variants | same | [x] |
+| callouts: `.note/.tip/.warning/.important` (+ `.name-title`) | same | [x] |
 | code: inline chips, copy buttons | same | [x] |
-| code: line numbers (`linenos`) | - | [~] v14 styles `.lineno` |
-| code: mermaid (lazy, theme-aware) | same (better) | [x] |
+| code: line numbers (`linenos`) | same (`.lineno` styled) | [x] |
+| code: mermaid (lazy, theme-aware) | same (better: re-renders on theme switch) | [x] |
 | tables: auto scroll wrapper | same | [x] |
-| lists: task list, definition list | task list | [~] definition list styling |
-| typography scale `.fs-1..fs-10`, `.fw-*`, `.text-*` | - | [~] v14 adds utility subset |
-| color utilities `.text-*` / `.bg-*` (grey/purple/blue/green/yellow/red) | - | [~] v14 adds core set |
-| `.d-inline-block`, `.flex-*`, `.v-align-*`, `.m-*`/`.p-*` spacing | - | [ ] (partial v14: d-inline-block) |
+| lists: task list, definition list | same | [x] |
+| typography scale `.fs-1..fs-10`, `.fw-*`, `.text-*` | same | [x] |
+| color utilities `.text-*` / `.bg-*` | same (JTD palette) | [x] |
+| spacing `.m-*`/`.p-*`, flex, `.v-align-*`, `.d-*` | same | [x] |
+| print stylesheet | same | [x] |
 
 ## Layouts
 
 | JTD | stygian | Status |
 | --- | --- | --- |
-| `layout: default` (sidebar + title H1 + child TOC) | chrome only | [~] v14: docs-mode |
-| `layout: minimal` (no sidebar) | `layout: page` | [~] v14 alias |
-| `layout: home` | `layout: page` for landing | [ ] alias |
+| `layout: default` (sidebar + title H1 + child TOC) | same (docs-mode) | [x] |
+| `layout: minimal` (no sidebar) | same (`minimal` + `page`) | [x] |
+| `layout: home` | same (alias of page) | [x] |
 | `layout: post` (blog) | - | [ ] (out of scope: docs engine) |
 
 ## Customization / hooks
@@ -86,37 +89,35 @@ Legend: [x] shipped, [~] partial / planned, [ ] missing.
 | JTD | stygian | Status |
 | --- | --- | --- |
 | client-side search, zero plugins | same architecture | [x] |
-| `search_exclude` front matter | same | [x] |
+| `search_exclude` front matter + per collection | same | [x] |
 | SEO | auto WebSite + Breadcrumb JSON-LD + OG (better than JTD default) | [x] |
 | dark/light with saved preference + animated reveal | yes | [x] (JTD: static scheme only) |
 | prev/next paging, breadcrumbs, back-to-top | yes | [x] (JTD lacks prev/next) |
-| print stylesheet | - | [ ] |
+| versioned asset URLs tied to the gem version | yes (spec-guarded) | [x] |
 | `fix_linenos` | n/a (modern rouge output) | [x] |
 
 ## Verdict
 
-Stygian already beats JTD on: zero-plugin search, automatic SEO, animated
-theme switch, prev/next paging, code copy buttons, lazy theme-aware
-mermaid. The gap is **drop-in migration**: JTD front matter, config keys,
-nav model and component classes. That is what the v14 line of work
-closes. See ROADMAP.md for the plan.
+Stygian now covers the just-the-docs surface end to end - config keys,
+front matter, the navigation model (including multi-collection
+categories and `nav_fold`), component classes and the utility matrix -
+while keeping its own extras: zero-plugin search with section-level
+indexing, automatic SEO, animated theme switching, prev/next paging,
+code copy buttons and lazy theme-aware mermaid. Remaining gaps are
+small: config-driven custom callout colors, two minor extension hooks
+and GA tracking (deliberately excluded).
 
 # Roadmap
 
-- **v14** (current): migration surface — JTD nav model (title parents,
-  recursive levels, number/string `nav_order`, `nav_sort`, child TOC,
-  `has_toc`, external links, `nav_enabled`), config aliases (logo,
-  favicon, color_scheme, search_enabled, heading_anchors, footer_content,
-  last_edit_timestamp, gh_edit_link, mermaid.version, callouts, aux_links
-  hash), JTD component classes (labels, buttons, callouts, line numbers,
-  typography/color utilities), `layout: minimal` + docs-mode `default`,
-  migration guide, extensive docs, collaboration tooling, personal-data
-  scrub.
-- **v15**: search parity (`heading_level` section search, previews count,
-  tokenizer separator, focus shortcut key config), `nav_fold`
-  collapsible collections, multiple collections as categories,
-  `search.button` FAB, definition-list styling, print stylesheet,
-  `layout: home`.
-- **v16**: spacing/layout utility matrix (`m-*`/`p-*`, `flex-*`,
-  `v-align-*`), `search_placeholder_custom` / `toc_heading_custom` hooks,
-  JTD color scheme authoring parity via `_sass/color_schemes`.
+- **0.2.0** (current): full JTD parity - search section indexing
+  (`heading_level`, previews, FAB, focus shortcut, tokenizer),
+  multi-collection navigation with `nav_fold`, spacing/flex/v-align
+  utilities, definition lists, print stylesheet, `layout: home`,
+  SemVer releases with tags (version.rb + `?v=` tied, spec-guarded).
+- **0.3.0**: config-driven custom callouts (`callouts:` colors/titles),
+  `search_placeholder_custom` / `toc_heading_custom` hooks, custom
+  color scheme authoring parity (`_sass/color_schemes` style via CSS
+  variables), `layout: post` for blog-style collections.
+- **0.4.0**: search result ranking parity (lunr-style phrase scoring),
+  optional `ga_tracking` module, API-stability audit and
+  `MIGRATION.md` per-release notes like just-the-docs.

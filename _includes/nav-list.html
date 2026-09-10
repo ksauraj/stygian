@@ -1,34 +1,98 @@
 {%- comment -%}
-Sidebar navigation for the docs collection. Just-the-docs compatible:
-  - parents are matched by page TITLE (with legacy filename fallback)
-  - arbitrary nesting depth via nav-tree.html
-  - nav_order accepts numbers and strings (numbers first); without
-    nav_order pages sort alphabetically by title; nav_sort:
-    case_insensitive supported
-  - nav_exclude: true hides a page (and its subtree from the sidebar)
-  - external links: site.nav_external_links [{title, url}] rendered at
-    the bottom; nav_external_links_new_tab opens them in a new tab
+Sidebar navigation. JTD-compatible:
+  - regular pages (outside collections) render first, then collections
+    configured under `just_the_docs.collections` with a category label
+    (hidden when it is the only category), `nav_exclude` per collection,
+    and `nav_fold: true` for collapsible collections (expanded without JS)
+  - without `just_the_docs.collections`, the native single-collection
+    path applies (stygian.nav.collection, sidebar title stygian.nav.title)
+  - parents are matched by page TITLE (legacy filename fallback);
+    nav_order accepts numbers and strings (numbers first), nav_sort:
+    case_insensitive supported; nav_exclude: true hides a page
+  - external links: site.nav_external_links rendered at the bottom
 {%- endcomment -%}
-{%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
-{%- assign nav_all_docs = site[collection_name] -%}
-{%- unless nav_all_docs -%}{%- assign nav_all_docs = '' | split: '' -%}{%- endunless -%}
-{%- assign nav_all_docs = nav_all_docs | where_exp: 'item', 'item.title != nil' -%}
-{%- unless nav_all_docs -%}{%- assign nav_all_docs = '' | split: '' -%}{%- endunless -%}
-{%- assign nav_parenthood = nav_all_docs | group_by: 'parent' -%}
-{%- assign nav_top_nodes = nav_parenthood | where_exp: 'item', "item.name == ''" | map: 'items' | first -%}
-{%- unless nav_top_nodes -%}{%- assign nav_top_nodes = '' | split: '' -%}{%- endunless -%}
-{%- assign nav_top_nodes = nav_top_nodes | where_exp: 'item', 'item.nav_exclude != true' -%}
-{%- unless nav_top_nodes -%}{%- assign nav_top_nodes = '' | split: '' -%}{%- endunless -%}
-{%- assign nav_top_node_titles = nav_top_nodes | map: 'title' -%}
-{%- include nav-sort.html pages=nav_top_nodes -%}
+{%- assign nav_empty = '' | split: '' -%}
+
+{%- comment -%} regular (non-collection) pages, JTD style {%- endcomment -%}
+{%- assign reg_pages = site.html_pages | where_exp: 'item', 'item.title != nil' | where_exp: 'item', 'item.nav_exclude != true' -%}
+{%- unless reg_pages -%}{%- assign reg_pages = nav_empty -%}{%- endunless -%}
+{%- assign reg_parenthood = reg_pages | group_by: 'parent' -%}
+{%- assign reg_top = reg_parenthood | where_exp: 'item', "item.name == ''" | map: 'items' | first -%}
+{%- unless reg_top -%}{%- assign reg_top = nav_empty -%}{%- endunless -%}
+{%- include nav-sort.html pages=reg_top -%}
+{%- assign reg_sorted = nav_sorted -%}
+{%- assign reg_titles = reg_top | map: 'title' -%}
 
 <nav class="docs__nav" aria-label="Sections">
-  <ul class="docs__nav-list">
-    {%- assign nav_empty = '' | split: '' -%}
-    {%- assign nav_tree_pages = nav_sorted -%}
-    {%- unless nav_tree_pages -%}{%- assign nav_tree_pages = nav_empty -%}{%- endunless -%}
-    {%- include nav-tree.html pages=nav_tree_pages ancestors=nav_empty parenthood=nav_parenthood top_titles=nav_top_node_titles -%}
-  </ul>
+  {%- if reg_sorted.size > 0 -%}
+    <ul class="docs__nav-list">
+      {%- include nav-tree.html pages=reg_sorted ancestors=nav_empty parenthood=reg_parenthood top_titles=reg_titles -%}
+    </ul>
+  {%- endif -%}
+
+  {%- if site.just_the_docs.collections -%}
+    {%- assign jtd_collections = site.just_the_docs.collections -%}
+    {%- assign has_reg = false -%}
+    {%- if reg_sorted.size > 0 -%}{%- assign has_reg = true -%}{%- endif -%}
+    {%- for entry in jtd_collections -%}
+      {%- assign col_key = entry[0] -%}
+      {%- assign col_cfg = entry[1] -%}
+      {%- if col_cfg.nav_exclude != true -%}
+        {%- assign col_docs = site[col_key] -%}
+        {%- unless col_docs -%}{%- assign col_docs = nav_empty -%}{%- endunless -%}
+        {%- assign col_docs = col_docs | where_exp: 'item', 'item.title != nil' | where_exp: 'item', 'item.nav_exclude != true' -%}
+        {%- unless col_docs -%}{%- assign col_docs = nav_empty -%}{%- endunless -%}
+        {%- assign col_parenthood = col_docs | group_by: 'parent' -%}
+        {%- assign col_top = col_parenthood | where_exp: 'item', "item.name == ''" | map: 'items' | first -%}
+        {%- unless col_top -%}{%- assign col_top = nav_empty -%}{%- endunless -%}
+        {%- include nav-sort.html pages=col_top -%}
+        {%- assign col_sorted = nav_sorted -%}
+        {%- assign col_titles = col_top | map: 'title' -%}
+        {%- assign col_name = col_cfg.name | default: col_key -%}
+        {%- assign show_label = false -%}
+        {%- if jtd_collections.size > 1 or has_reg -%}{%- assign show_label = true -%}{%- endif -%}
+
+        {%- if col_cfg.nav_fold == true -%}
+          <div class="docs__nav-fold">
+            <button type="button" class="docs__nav-fold-btn js-nav-fold-btn" aria-expanded="false" aria-controls="nav-fold-{{ col_key }}">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+              <span>{{ col_name }}</span>
+            </button>
+            <ul class="docs__nav-list" id="nav-fold-{{ col_key }}">
+              {%- include nav-tree.html pages=col_sorted ancestors=nav_empty parenthood=col_parenthood top_titles=col_titles -%}
+            </ul>
+          </div>
+        {%- else -%}
+          {%- if show_label -%}
+            <div class="docs__nav-category">{{ col_name }}</div>
+          {%- endif -%}
+          <ul class="docs__nav-list">
+            {%- include nav-tree.html pages=col_sorted ancestors=nav_empty parenthood=col_parenthood top_titles=col_titles -%}
+          </ul>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- else -%}
+    {%- comment -%} native single-collection path {%- endcomment -%}
+    {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+    {%- assign nav_all_docs = site[collection_name] -%}
+    {%- unless nav_all_docs -%}{%- assign nav_all_docs = nav_empty -%}{%- endunless -%}
+    {%- assign nav_all_docs = nav_all_docs | where_exp: 'item', 'item.title != nil' -%}
+    {%- unless nav_all_docs -%}{%- assign nav_all_docs = nav_empty -%}{%- endunless -%}
+    {%- assign nav_parenthood = nav_all_docs | group_by: 'parent' -%}
+    {%- assign nav_top_nodes = nav_parenthood | where_exp: 'item', "item.name == ''" | map: 'items' | first -%}
+    {%- unless nav_top_nodes -%}{%- assign nav_top_nodes = nav_empty -%}{%- endunless -%}
+    {%- assign nav_top_nodes = nav_top_nodes | where_exp: 'item', 'item.nav_exclude != true' -%}
+    {%- unless nav_top_nodes -%}{%- assign nav_top_nodes = nav_empty -%}{%- endunless -%}
+    {%- assign nav_top_node_titles = nav_top_nodes | map: 'title' -%}
+    {%- include nav-sort.html pages=nav_top_nodes -%}
+    <ul class="docs__nav-list">
+      {%- assign nav_tree_pages = nav_sorted -%}
+      {%- unless nav_tree_pages -%}{%- assign nav_tree_pages = nav_empty -%}{%- endunless -%}
+      {%- include nav-tree.html pages=nav_tree_pages ancestors=nav_empty parenthood=nav_parenthood top_titles=nav_top_node_titles -%}
+    </ul>
+  {%- endif -%}
+
   {%- if site.nav_external_links -%}
     <ul class="docs__nav-list docs__nav-external">
       {%- for link in site.nav_external_links -%}

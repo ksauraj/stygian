@@ -69,7 +69,7 @@ of contents unless `has_toc: false`.
   {% if nav_enabled %}
   <aside class="docs__sidebar" id="sidebar" aria-label="Documentation navigation">
     <div class="docs__sidebar-head">
-      <span class="docs__sidebar-title">{{ site.stygian.nav.title | default: 'Docs' }}</span>
+      <span class="docs__sidebar-title">{% if site.stygian.nav.title %}{{ site.stygian.nav.title }}{% elsif site.just_the_docs.collections == nil %}Docs{% endif %}</span>
       <button type="button" class="docs__close js-nav-close" aria-label="Close navigation">×</button>
     </div>
     {% include nav-list.html %}

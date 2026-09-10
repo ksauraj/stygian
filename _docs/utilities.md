@@ -53,7 +53,41 @@ small-uppercase section-label style used across these docs:
 
 ## Display
 
-`.d-inline-block` for inline block layout.
+`.d-inline-block` for inline block layout, plus `.d-block`, `.d-inline`,
+`.d-none`, `.d-flex`, `.d-inline-flex`.
+
+## Spacing
+
+The just-the-docs spacing scale: `0`-`8` map to 0, 0.25, 0.5, 0.75, 1,
+1.5, 2, 3 and 4rem. Apply to all sides or one:
+
+```markdown
+Padded card{: .p-4 }
+Bottom margin only{: .mb-5 }
+Centered block{: .mx-auto }
+```
+
+- all sides: `.m-<n>`, `.p-<n>`
+- one side: `.mt-`, `.mb-`, `.ml-`, `.mr-`, `.pt-`, `.pb-`, `.pl-`, `.pr-`
+- axis: `.mx-`, `.my-`, `.px-`, `.py-`
+- `.m-auto`, `.mx-auto`, `.my-auto`
+
+## Flex layout
+
+`.d-flex` plus the arrangement helpers:
+
+- direction: `.flex-row`, `.flex-column`
+- wrapping: `.flex-wrap`, `.flex-nowrap`
+- main axis: `.flex-justify-start`, `.flex-justify-center`,
+  `.flex-justify-end`, `.flex-justify-between`, `.flex-justify-around`
+- cross axis: `.flex-items-start`, `.flex-items-center`,
+  `.flex-items-end`, `.flex-items-baseline`, `.flex-items-stretch`
+- sizing: `.flex-1`, `.flex-auto`, `.flex-none`, `.flex-grow-1`
+
+## Vertical alignment
+
+`.v-align-baseline`, `.v-align-top`, `.v-align-middle`,
+`.v-align-bottom`.
 
 ## Color utilities
 
@@ -79,5 +113,5 @@ Available families: `grey-lt`, `grey-dk`, `purple`, `blue`, `green`,
 
 ## What is not ported yet
 
-The layout spacing matrix (`.m-*`, `.p-*`, `.flex-*`, `.v-align-*`) is
-not ported. Tracked in `GAP-ANALYSIS.md` under the v16 milestone.
+The layout spacing matrix is fully ported (see Spacing above). Tracked
+gaps live in `GAP-ANALYSIS.md`.

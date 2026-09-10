@@ -31,6 +31,60 @@ RSpec.describe "Stygian build" do
     expect(data.first).to have_key("content")
   end
 
+  it "splits the search index into sections by heading_level" do
+    data = JSON.parse(read(@dest, "assets/js/search-data.json"))
+    anchored = data.select { |e| e["url"].to_s.include?("#") }
+    expect(anchored.length).to be >= 5
+    expect(anchored.first).to have_key("title")
+  end
+
+  it "renders just_the_docs.collections with categories, fold and excludes" do
+    src = Dir.mktmpdir("stygian-jtdcol")
+    Dir.mkdir(File.join(src, "_docs"))
+    Dir.mkdir(File.join(src, "_guides"))
+    Dir.mkdir(File.join(src, "_internal"))
+    File.write(File.join(src, "_config.yml"), <<~YAML)
+      theme: stygian
+      collections:
+        docs: { output: true, permalink: "/:collection/:path/" }
+        guides: { output: true, permalink: "/:collection/:path/" }
+        internal: { output: true, permalink: "/:collection/:path/" }
+      just_the_docs:
+        collections:
+          docs: { name: Docs }
+          guides: { name: Guides, nav_fold: true }
+          internal: { name: Internal, search_exclude: true }
+      defaults:
+        - scope: { path: "", type: docs }
+          values: { layout: default }
+        - scope: { path: "", type: guides }
+          values: { layout: default }
+        - scope: { path: "", type: internal }
+          values: { layout: default }
+    YAML
+    File.write(File.join(src, "_docs", "a.md"), "---\ntitle: Alpha\n---\n## Section one\n\ncontent\n")
+    File.write(File.join(src, "_guides", "b.md"), "---\ntitle: Beta\n---\n## Section two\n\ncontent\n")
+    File.write(File.join(src, "_internal", "c.md"), "---\ntitle: Gamma\n---\n## Section three\n\ncontent\n")
+    dest = Dir.mktmpdir("stygian-jtdcol-out")
+    begin
+      cfg = Jekyll.configuration(
+        "source" => src, "destination" => dest,
+        "theme" => "stygian", "quiet" => true, "disable_disk_cache" => true
+      )
+      Jekyll::Site.new(cfg).process
+      html = read(dest, "docs/a/index.html")
+      expect(html).to include("docs__nav-category")
+      expect(html).to include("js-nav-fold-btn")
+      expect(html).to include(">Gamma<") # internal is in the nav (nav_exclude unset)
+      index = JSON.parse(read(dest, "assets/js/search-data.json"))
+      expect(index.map { |e| e["title"] }).not_to include("Gamma") # search_exclude
+      expect(index.map { |e| e["url"] }).to include("/guides/b/") # folded collection still indexed
+    ensure
+      FileUtils.remove_entry(src) if Dir.exist?(src)
+      FileUtils.remove_entry(dest) if Dir.exist?(dest)
+    end
+  end
+
   it "emits WebSite and BreadcrumbList JSON-LD when SEO is enabled" do
     html = read(@dest, "docs/getting-started/index.html")
     scripts = html.scan(%r{<script type="application/ld\+json">(.*?)</script>}m)
@@ -53,6 +107,14 @@ RSpec.describe "Stygian build" do
     expect(gemspec.files).to include("_layouts/docs.html")
     expect(gemspec.files).to include("_includes/head_custom.html")
     expect(gemspec.files).to include("assets/js/search-data.json")
+  end
+
+  it "keeps the asset query version in sync with the gem version" do
+    head = read(@dest, "index.html") # built with the demo config, contains ?v=
+    css_ref = head[/stygian\.css\?v=([^"']+)/, 1]
+    js_ref = head[/stygian\.js\?v=([^"']+)/, 1]
+    expect(css_ref).to eq(Stygian::VERSION)
+    expect(js_ref).to eq(Stygian::VERSION)
   end
 
   it "ships no _config.yml in the theme root (no demo default leak)" do

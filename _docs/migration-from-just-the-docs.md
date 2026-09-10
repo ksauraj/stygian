@@ -99,6 +99,10 @@ stygian:
     default: dark
   search:
     enabled: true
+    heading_level: 2
+    previews: 3
+    button: false
+    focus_shortcut_key: "k"
   header:
     aux_links:
       - { label: GitHub, href: https://github.com/you/repo }
@@ -126,13 +130,21 @@ and color utilities (`.text-*`, `.bg-*`) all use the same names.
 
 - Dark mode is the default scheme; set `color_scheme: light` for the
   just-the-docs default look. Visitors can switch at runtime either way.
-- `just_the_docs.collections` multi-collection nav categories and
-  `nav_fold` are not implemented yet (tracked in GAP-ANALYSIS.md).
-- Search is styled differently but uses the same
-  `assets/js/search-data.json` path; `search.*` fine-tuning keys
-  (`heading_level`, `previews`, `button`) are not implemented yet.
+- Search ranking uses a lightweight zero-dependency token scorer rather
+  than lunr; all `search.*` options are supported.
 - The footer layout differs; `footer_content`, `last_edit_timestamp`
   and `gh_edit_link` are rendered in a dedicated meta row.
+- Custom callout colors via a `callouts:` config block are not
+  implemented yet (the four built-in classes work as-is).
+- `search_placeholder_custom` and `toc_heading_custom` hooks are not
+  implemented; `head_custom`, `header_custom`, `footer_custom` and
+  `nav_footer_custom` are identical.
+
+Everything else - navigation model (including multi-collection
+categories and `nav_fold`), config keys, front matter, component
+classes and the utility matrix - is compatible. See
+[GAP-ANALYSIS.md](https://github.com/ksauraj/stygian/blob/main/GAP-ANALYSIS.md)
+for the row-by-row comparison.
 
 ## 7. Verify
 

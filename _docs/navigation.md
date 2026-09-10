@@ -122,5 +122,32 @@ The native equivalent is `stygian.nav.enabled`.
 
 `stygian.nav.collection` selects which collection feeds the sidebar
 (default `docs`). The sidebar title is `stygian.nav.title` (default
-`Docs`). Multi-collection categories (`just_the_docs.collections`) are
-not implemented yet; see `GAP-ANALYSIS.md`.
+`Docs`).
+
+Just-the-docs style multi-collection navigation is supported: regular
+pages render first, then each collection in `just_the_docs.collections`
+as a category.
+
+```yaml
+collections:
+  docs: { output: true, permalink: /:collection/:path/ }
+  guides: { output: true, permalink: /:collection/:path/ }
+
+just_the_docs:
+  collections:
+    docs:
+      name: Docs
+    guides:
+      name: Guides
+      nav_fold: true        # collapsible category (expanded without JS)
+      # nav_exclude: true   # skip this collection in the sidebar
+      # search_exclude: true # skip this collection in the search index
+```
+
+Hiding a whole collection with `nav_exclude: true` also removes the
+pages beneath it from the sidebar. `nav_fold: true` adds an expander
+button; the list is expanded when JavaScript is unavailable, matching
+just-the-docs.
+
+Collection pages keep their own parent namespaces: a page cannot be the
+child of a page in a different collection.
