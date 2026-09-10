@@ -9,7 +9,10 @@ Parents are resolved by TITLE first (just-the-docs), then by filename
 of contents unless `has_toc: false`.
 {%- endcomment -%}
 {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
-{%- assign shell_docs = site[collection_name] | where_exp: 'item', 'item.title != nil' -%}
+{%- assign shell_docs = site[collection_name] -%}
+{%- unless shell_docs -%}{%- assign shell_docs = '' | split: '' -%}{%- endunless -%}
+{%- assign shell_docs = shell_docs | where_exp: 'item', 'item.title != nil' -%}
+{%- unless shell_docs -%}{%- assign shell_docs = '' | split: '' -%}{%- endunless -%}
 {%- assign page_key = page.path | split: '/' | last | remove: '.md' -%}
 {%- assign parent_doc = nil -%}
 {%- if page.parent and page.parent != '' -%}

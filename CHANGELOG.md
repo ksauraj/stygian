@@ -13,6 +13,19 @@ Legend:
 
 ## [Unreleased]
 
+### Fixed
+
+- Crash on sites without a `docs` collection: a page using the `docs`
+  layout raised `Cannot sort a null object.` on the GitHub Pages build
+  stack (Jekyll 3.10 / github-pages v232). Every collection touchpoint
+  (prev/next, sidebar nav, sort, child TOC, search index) is now
+  nil-safe and renders an empty sidebar instead of failing the build.
+- Prev/next paging now resolves parents by page TITLE (with legacy
+  filename fallback), matching the sidebar engine, and sorts with the
+  same number/string `nav_order` rules.
+
+## [0.1.1] - 2026-09-10
+
 ### Added
 
 - **Just-the-docs compatibility layer**:
