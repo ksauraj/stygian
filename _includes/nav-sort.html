@@ -7,16 +7,25 @@
   - then pages without `nav_order`, ordered by `title` (numbers, then strings)
   - string comparisons honor `nav_sort: case_insensitive`
   - ties fall back to insertion order (stable enough for docs sites)
+
+  Defensive: a nil or empty `pages` input yields an empty `nav_sorted`
+  (a missing docs collection must never crash a consumer build - Jekyll's
+  `sort` filter raises "Cannot sort a null object." on nil).
 {%- endcomment -%}
-{%- assign nav_order_pages = include.pages | where_exp: 'item', 'item.nav_order != nil' -%}
-{%- assign title_order_pages = include.pages | where_exp: 'item', 'item.nav_order == nil' -%}
+{%- assign nav_pages = include.pages -%}
+{%- unless nav_pages -%}{%- assign nav_pages = '' | split: '' -%}{%- endunless -%}
+
+{%- assign nav_order_pages = nav_pages | where_exp: 'item', 'item.nav_order != nil' -%}
+{%- assign title_order_pages = nav_pages | where_exp: 'item', 'item.nav_order == nil' -%}
+{%- unless nav_order_pages -%}{%- assign nav_order_pages = '' | split: '' -%}{%- endunless -%}
+{%- unless title_order_pages -%}{%- assign title_order_pages = '' | split: '' -%}{%- endunless -%}
 
 {%- assign double_quote = '"' -%}
 {%- assign empty_array = '' | split: '' -%}
 
 {%- assign nav_string_pages = empty_array -%}
 {%- assign nav_number_pages = empty_array -%}
-{%- unless nav_order_pages == empty -%}
+{%- if nav_order_pages.size > 0 -%}
   {%- assign nav_order_groups = nav_order_pages
         | group_by_exp: 'item',
             'item.nav_order | jsonify | slice: 0 | remove: double_quote | size' -%}
@@ -27,11 +36,11 @@
       {%- assign nav_number_pages = group.items -%}
     {%- endif -%}
   {%- endfor -%}
-{%- endunless -%}
+{%- endif -%}
 
 {%- assign title_string_pages = empty_array -%}
 {%- assign title_number_pages = empty_array -%}
-{%- unless title_order_pages == empty -%}
+{%- if title_order_pages.size > 0 -%}
   {%- assign title_order_groups = title_order_pages
         | group_by_exp: 'item',
             'item.title | jsonify | slice: 0 | remove: double_quote | size' -%}
@@ -42,28 +51,33 @@
       {%- assign title_number_pages = group.items -%}
     {%- endif -%}
   {%- endfor -%}
-{%- endunless -%}
+{%- endif -%}
 
-{%- unless nav_number_pages == empty -%}
+{%- unless nav_number_pages -%}{%- assign nav_number_pages = empty_array -%}{%- endunless -%}
+{%- unless nav_string_pages -%}{%- assign nav_string_pages = empty_array -%}{%- endunless -%}
+{%- unless title_number_pages -%}{%- assign title_number_pages = empty_array -%}{%- endunless -%}
+{%- unless title_string_pages -%}{%- assign title_string_pages = empty_array -%}{%- endunless -%}
+
+{%- if nav_number_pages.size > 0 -%}
   {%- assign nav_number_pages = nav_number_pages | sort: 'nav_order' -%}
-{%- endunless -%}
-{%- unless nav_string_pages == empty -%}
+{%- endif -%}
+{%- if nav_string_pages.size > 0 -%}
   {%- if site.nav_sort == 'case_insensitive' -%}
     {%- assign nav_string_pages = nav_string_pages | sort_natural: 'nav_order' -%}
   {%- else -%}
     {%- assign nav_string_pages = nav_string_pages | sort: 'nav_order' -%}
   {%- endif -%}
-{%- endunless -%}
-{%- unless title_number_pages == empty -%}
+{%- endif -%}
+{%- if title_number_pages.size > 0 -%}
   {%- assign title_number_pages = title_number_pages | sort: 'title' -%}
-{%- endunless -%}
-{%- unless title_string_pages == empty -%}
+{%- endif -%}
+{%- if title_string_pages.size > 0 -%}
   {%- if site.nav_sort == 'case_insensitive' -%}
     {%- assign title_string_pages = title_string_pages | sort_natural: 'title' -%}
   {%- else -%}
     {%- assign title_string_pages = title_string_pages | sort: 'title' -%}
   {%- endif -%}
-{%- endunless -%}
+{%- endif -%}
 
 {%- assign nav_sorted = nav_number_pages
       | concat: nav_string_pages

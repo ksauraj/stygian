@@ -83,4 +83,27 @@ RSpec.describe "Stygian build" do
     expect(gemspec.authors).to eq(["Stygian contributors"])
     expect(gemspec.email).to be_nil
   end
+
+  it "does not crash when a site has no docs collection (GH Pages regression)" do
+    # A consumer page using the docs layout with no `docs` collection used to
+    # raise "Cannot sort a null object." on Jekyll 3.10 (github-pages v232).
+    src = Dir.mktmpdir("stygian-nocoll")
+    File.write(File.join(src, "_config.yml"), "theme: stygian\ntitle: No collection\n")
+    File.write(File.join(src, "index.md"), "---\nlayout: docs\ntitle: Home\n---\n\n# Home\n")
+    dest = Dir.mktmpdir("stygian-nocoll-out")
+    begin
+      cfg = Jekyll.configuration(
+        "source" => src, "destination" => dest,
+        "theme" => "stygian", "quiet" => true, "disable_disk_cache" => true
+      )
+      site = Jekyll::Site.new(cfg)
+      site.process
+      html = read(dest, "index.html")
+      expect(html).to include("docs__sidebar")
+      expect(html).to include("<h1>Home</h1>")
+    ensure
+      FileUtils.remove_entry(src) if Dir.exist?(src)
+      FileUtils.remove_entry(dest) if Dir.exist?(dest)
+    end
+  end
 end

@@ -1,16 +1,23 @@
 {%- comment -%}
 Bottom "previous / next" navigation, flattened in navigation order:
 parents first (by nav_order), each followed immediately by its children.
+Sites without a docs collection render nothing (defensive: a nil
+collection must never crash the build).
 {%- endcomment -%}
 {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
-{%- assign all_docs = site[collection_name] | where_exp: 'item', 'item.nav_exclude != true' | sort: 'nav_order' -%}
+{%- assign all_docs = site[collection_name] -%}
+{%- unless all_docs -%}{%- assign all_docs = '' | split: '' -%}{%- endunless -%}
+{%- assign all_docs = all_docs | where_exp: 'item', 'item.nav_exclude != true' -%}
+{%- unless all_docs -%}{%- assign all_docs = '' | split: '' -%}{%- endunless -%}
+{%- include nav-sort.html pages=all_docs -%}
+{%- assign all_docs = nav_sorted -%}
 {%- assign flat = '' -%}
 {% for doc in all_docs %}
   {%- assign doc_key = doc.path | split: '/' | last | remove: '.md' -%}
   {%- if doc.parent == nil or doc.parent == '' -%}
     {%- assign flat = flat | append: doc.url | append: ',' -%}
     {%- for child in all_docs -%}
-      {%- if child.parent == doc_key -%}{%- assign flat = flat | append: child.url | append: ',' -%}{%- endif -%}
+      {%- if child.parent == doc.title or child.parent == doc_key -%}{%- assign flat = flat | append: child.url | append: ',' -%}{%- endif -%}
     {%- endfor -%}
   {%- endif -%}
 {% endfor %}

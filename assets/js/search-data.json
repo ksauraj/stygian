@@ -5,8 +5,10 @@
 layout: null
 ---
 {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+{%- assign search_docs = site[collection_name] -%}
+{%- unless search_docs -%}{%- assign search_docs = '' | split: '' -%}{%- endunless -%}
 [
-{%- for doc in site[collection_name] -%}
+{%- for doc in search_docs -%}
 {%- unless doc.search_exclude -%}
   {"title":{{ doc.title | default: doc.name | jsonify }},"url":{{ doc.url | relative_url | jsonify }},"content":{{ doc.content | markdownify | replace: '</p>', ' ' | replace: '</li>', ' ' | replace: '</h1>', ' ' | replace: '</h2>', ' ' | replace: '</h3>', ' ' | replace: '</h4>', ' ' | replace: '<br />', ' ' | replace: '
 ', ' ' | strip_html | jsonify }}}{% unless forloop.last %},{% endunless %}

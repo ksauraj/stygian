@@ -10,17 +10,24 @@ Sidebar navigation for the docs collection. Just-the-docs compatible:
     the bottom; nav_external_links_new_tab opens them in a new tab
 {%- endcomment -%}
 {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
-{%- assign nav_all_docs = site[collection_name] | where_exp: 'item', 'item.title != nil' -%}
+{%- assign nav_all_docs = site[collection_name] -%}
+{%- unless nav_all_docs -%}{%- assign nav_all_docs = '' | split: '' -%}{%- endunless -%}
+{%- assign nav_all_docs = nav_all_docs | where_exp: 'item', 'item.title != nil' -%}
+{%- unless nav_all_docs -%}{%- assign nav_all_docs = '' | split: '' -%}{%- endunless -%}
 {%- assign nav_parenthood = nav_all_docs | group_by: 'parent' -%}
-{%- assign nav_top_nodes = nav_parenthood | where_exp: 'item', 'item.name == empty or item.name == ""' | map: 'items' | first -%}
+{%- assign nav_top_nodes = nav_parenthood | where_exp: 'item', "item.name == ''" | map: 'items' | first -%}
+{%- unless nav_top_nodes -%}{%- assign nav_top_nodes = '' | split: '' -%}{%- endunless -%}
 {%- assign nav_top_nodes = nav_top_nodes | where_exp: 'item', 'item.nav_exclude != true' -%}
+{%- unless nav_top_nodes -%}{%- assign nav_top_nodes = '' | split: '' -%}{%- endunless -%}
 {%- assign nav_top_node_titles = nav_top_nodes | map: 'title' -%}
 {%- include nav-sort.html pages=nav_top_nodes -%}
 
 <nav class="docs__nav" aria-label="Sections">
   <ul class="docs__nav-list">
     {%- assign nav_empty = '' | split: '' -%}
-    {%- include nav-tree.html pages=nav_sorted ancestors=nav_empty parenthood=nav_parenthood top_titles=nav_top_node_titles -%}
+    {%- assign nav_tree_pages = nav_sorted -%}
+    {%- unless nav_tree_pages -%}{%- assign nav_tree_pages = nav_empty -%}{%- endunless -%}
+    {%- include nav-tree.html pages=nav_tree_pages ancestors=nav_empty parenthood=nav_parenthood top_titles=nav_top_node_titles -%}
   </ul>
   {%- if site.nav_external_links -%}
     <ul class="docs__nav-list docs__nav-external">
