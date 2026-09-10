@@ -62,7 +62,7 @@ Text and background variants for the just-the-docs palette. Levels
 
 ```markdown
 This is purple text{: .text-purple-100 }
-A tinted swatch: <span class="d-inline-block p-2 mr-1 bg-purple-000"></span>
+A tinted swatch: <span class="d-inline-block bg-purple-000" style="padding:0.55rem 1rem;border-radius:0.25rem"></span>
 ```
 
 Available families: `grey-lt`, `grey-dk`, `purple`, `blue`, `green`,
