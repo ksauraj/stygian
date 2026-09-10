@@ -68,10 +68,9 @@ navigation tree shape, and compatibility config behavior.
 3. Keep changes surgical. This theme is a docs engine: no portfolio
    UI, no demo personas, no emoji or em/en dashes in site copy.
 4. Add or update a spec in `spec/` for the behavior you changed.
-5. Bump the asset version in `_includes/head.html` and
-   `_includes/scripts.html` (`?v=N`) so Pages never serves stale
-   CSS/JS, and record the change under `[Unreleased]` in
-   `CHANGELOG.md`.
+5. Record the change under `[Unreleased]` in `CHANGELOG.md`. Do **not**
+   bump the version or the asset query strings for a regular change -
+   those only move when a release is cut.
 6. Open a pull request against `main` and fill in the template.
 7. CI runs `bundle exec rake spec` on Ruby 3.2 and 3.3. It must pass
    before the PR can merge.
@@ -79,8 +78,30 @@ navigation tree shape, and compatibility config behavior.
 ### Commit messages
 
 Use conventional commits: `fix(theme): ...`, `feat(theme): ...`,
-`docs: ...`, `chore: ...`. Reference the asset version in the subject
-for theme changes, e.g. `fix(theme): mobile header squeeze (v14)`.
+`docs: ...`, `chore: ...`.
+
+## Cutting a release
+
+Releases are real SemVer milestones, not per-commit bumps (the old
+`?v=N`-per-commit flow is gone). Multiple PRs accumulate on `main`
+under `[Unreleased]`; when a coherent batch is ready:
+
+1. Decide the version (`MAJOR.MINOR.PATCH`) and note it in
+   `CHANGELOG.md`: rename `[Unreleased]` to `[X.Y.Z] - <date>`.
+2. Bump `lib/stygian/version.rb` to the same value.
+3. Update the asset query strings in `_includes/head.html` and
+   `_includes/scripts.html` to `?v=<X.Y.Z>` (the spec suite asserts
+   they match `Stygian::VERSION`, so they cannot drift).
+4. Open the release PR (theme changes + changelog + version bump) and
+   merge it after CI passes.
+5. Tag the release on `main`: `git tag v<X.Y.Z>` and push the tag.
+   The publish-gem workflow builds the gem from version tags.
+6. Consumers on GitHub Pages pick the theme up on their next rebuild;
+   versioned asset URLs bust the Pages CDN cache automatically.
+
+Every release keeps its tag and is never rewritten - fixes land as the
+next version, never as a force-pushed edit. See the versioning note in
+`README.md`.
 
 ## Design and development principles
 

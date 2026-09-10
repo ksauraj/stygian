@@ -108,6 +108,20 @@
    * ================================================================== */
 
   function initNav() {
+    // folded collections (JTD `nav_fold`): the list renders expanded in
+    // HTML so it works without JS, then collapses here once JS is running.
+    doc.querySelectorAll('.js-nav-fold-btn').forEach(function (btn) {
+      var target = doc.getElementById(btn.getAttribute('aria-controls'));
+      if (!target) return;
+      target.hidden = true;
+      btn.setAttribute('aria-expanded', 'false');
+      btn.addEventListener('click', function () {
+        var expanded = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!expanded));
+        target.hidden = expanded;
+      });
+    });
+
     var openBtn = doc.querySelector('.js-nav-toggle');
     var closeBtn = doc.querySelector('.js-nav-close');
     var scrim = doc.querySelector('.js-nav-scrim');
@@ -291,7 +305,10 @@
   }
 
   /* ==================================================================
-   * SEARCH (client-side, index fetched from search-data.json)
+   * SEARCH (client-side, section index from search-data.json).
+   * JTD-compatible options: heading_level (index build), previews,
+   * preview_words_before/after, rel_url, button (floating FAB),
+   * focus_shortcut_key, tokenizer_separator.
    * ================================================================== */
 
   var styCfg = null;
@@ -326,49 +343,91 @@
     return searchIndexPromise;
   }
 
-  function searchDocs(query, index) {
-    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  // Tokenizer: `search.tokenizer_separator` accepts a regex source ("[\\s/]+")
+  // or a /slash-wrapped/ literal. Default splits on whitespace, hyphen and
+  // slash, so `kube-system` is searchable as `kube` and `system`.
+  function tokenize(text, separator) {
+    var src = separator || '[\\s\\-/]+';
+    if (src.charAt(0) === '/' && src.length > 1 && src.lastIndexOf('/') === src.length - 1) {
+      src = src.slice(1, -1);
+    }
+    var re;
+    try { re = new RegExp(src, 'i'); } catch (e) { re = /[\s\-/]+/i; }
+    return String(text).toLowerCase().split(re).filter(Boolean);
+  }
+
+  function searchDocs(query, index, opts) {
+    var tokens = tokenize(query, opts.tokenizer_separator);
     if (!tokens.length || !index.length) return [];
+
     var scored = [];
     for (var i = 0; i < index.length; i++) {
-      var doc = index[i];
-      var title = (doc.title || '').toLowerCase();
-      var content = (doc.content || '').toLowerCase();
+      var sec = index[i];
+      var docTitle = (sec.doc || '').toLowerCase();
+      var secTitle = (sec.title || '').toLowerCase();
+      var content = (sec.content || '').toLowerCase();
       var score = 0;
       var hit = true;
       for (var t = 0; t < tokens.length; t++) {
         var tok = tokens[t];
-        var inTitle = title.indexOf(tok) !== -1;
+        var inDoc = docTitle.indexOf(tok) !== -1;
+        var inSec = secTitle.indexOf(tok) !== -1;
         var inContent = content.indexOf(tok) !== -1;
-        if (!inTitle && !inContent) { hit = false; break; }
-        if (title.indexOf(tok) === 0) score += 30;
-        else if (inTitle) score += 18;
-        if (inContent) score += Math.min(6, (content.split(tok).length - 1)) * 3;
+        if (!inDoc && !inSec && !inContent) { hit = false; break; }
+        if (docTitle.indexOf(tok) === 0) score += 30;
+        else if (inDoc) score += 18;
+        if (secTitle.indexOf(tok) === 0) score += 22;
+        else if (inSec) score += 14;
+        if (inContent) score += Math.min(6, content.split(tok).length - 1) * 3;
       }
-      if (hit) scored.push({ doc: doc, score: score });
+      if (hit) scored.push({ section: sec, score: score });
     }
-    scored.sort(function (a, b) { return b.score - a.score || String(a.doc.title).localeCompare(String(b.doc.title)); });
-    return scored.slice(0, 12).map(function (s) { return s.doc; });
+    scored.sort(function (a, b) { return b.score - a.score; });
+
+    // group sections by page, capped at `previews` sections per page
+    var groups = [];
+    var byKey = {};
+    for (var s = 0; s < scored.length; s++) {
+      var section = scored[s].section;
+      var key = String(section.url || '').split('#')[0];
+      if (!byKey[key]) {
+        byKey[key] = { doc: section.doc, url: key, sections: [], score: 0 };
+        groups.push(byKey[key]);
+      }
+      var group = byKey[key];
+      if (group.sections.length < opts.previews) group.sections.push(section);
+      if (scored[s].score > group.score) group.score = scored[s].score;
+    }
+    groups.sort(function (a, b) {
+      return b.score - a.score || String(a.doc).localeCompare(String(b.doc));
+    });
+    return groups.slice(0, 10);
   }
 
-  function snippetFor(doc, query) {
-    var content = String(doc.content || '');
-    var text = content.replace(/\s+/g, ' ').trim();
-    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  // Word window around the first match, `preview_words_before` words back
+  // and `preview_words_after` words forward.
+  function snippetFor(text, tokens, wordsBefore, wordsAfter) {
+    var words = String(text).split(/\s+/).filter(Boolean);
+    var lower = String(text).toLowerCase();
     var at = -1;
     for (var i = 0; i < tokens.length; i++) {
-      at = text.toLowerCase().indexOf(tokens[i]);
-      if (at !== -1) break;
+      var pos = lower.indexOf(tokens[i]);
+      if (pos !== -1 && (at === -1 || pos < at)) at = pos;
     }
     if (at === -1) at = 0;
-    var start = Math.max(0, at - 55);
-    var end = Math.min(text.length, start + 150);
-    if (end - start < 150) start = Math.max(0, end - 150);
-    return { text: text.slice(start, end), lead: start > 0, trail: end < text.length, at: at - start };
+    var consumed = 0;
+    var wordIdx = 0;
+    for (var w = 0; w < words.length; w++) {
+      if (consumed + words[w].length >= at) { wordIdx = w; break; }
+      consumed += words[w].length + 1;
+    }
+    var start = Math.max(0, wordIdx - wordsBefore);
+    var end = Math.min(words.length, wordIdx + wordsAfter + 1);
+    return { text: words.slice(start, end).join(' '), lead: start > 0, trail: end < words.length };
   }
 
-  function appendHighlighted(parent, text, query) {
-    var tokens = query.toLowerCase().split(/\s+/).filter(Boolean);
+  function appendHighlighted(parent, text, tokens) {
+    if (!tokens.length) { parent.appendChild(doc.createTextNode(text)); return; }
     var re = new RegExp('(' + tokens.map(escapeRegExp).join('|') + ')', 'gi');
     var parts = text.split(re);
     // split() with a capturing group: even indexes are plain text,
@@ -386,40 +445,83 @@
     return m;
   }
 
-  function renderSearchResults(query, list, meta, index) {
+  function renderSearchResults(query, list, meta, index, opts) {
     list.innerHTML = '';
     if (!query.trim()) {
       meta.textContent = 'Type to search the documentation.';
       return;
     }
-    var hits = searchDocs(query, index);
-    if (!hits.length) {
+    var tokens = tokenize(query, opts.tokenizer_separator);
+    var results = searchDocs(query, index, opts);
+    if (!results.length) {
       meta.textContent = 'No results for "' + query + '".';
       return;
     }
-    meta.textContent = hits.length + (hits.length === 1 ? ' result' : ' results') + ' for "' + query + '".';
-    for (var i = 0; i < hits.length; i++) {
-      var hit = hits[i];
+    meta.textContent = results.length + (results.length === 1 ? ' result' : ' results') + ' for "' + query + '".';
+
+    for (var i = 0; i < results.length; i++) {
+      var group = results[i];
       var li = doc.createElement('li');
       li.className = 'search-overlay__result';
-      var a = doc.createElement('a');
-      a.href = hit.url;
-      var title = doc.createElement('span');
-      title.className = 'search-overlay__result-title';
-      appendHighlighted(title, hit.title || hit.url, query);
-      var snip = doc.createElement('span');
-      snip.className = 'search-overlay__result-snippet';
-      var sn = snippetFor(hit, query);
-      var body = doc.createElement('span');
-      if (sn.lead) body.appendChild(doc.createTextNode('... '));
-      appendHighlighted(body, sn.text, query);
-      if (sn.trail) body.appendChild(doc.createTextNode(' ...'));
-      snip.appendChild(body);
-      a.appendChild(title);
-      a.appendChild(snip);
-      li.appendChild(a);
+
+      var docLink = doc.createElement('a');
+      docLink.className = 'search-overlay__result-doc';
+      docLink.href = group.url;
+      appendHighlighted(docLink, group.doc || group.url, tokens);
+      li.appendChild(docLink);
+
+      if (opts.rel_url) {
+        var rel = doc.createElement('span');
+        rel.className = 'search-overlay__result-url';
+        rel.textContent = group.url;
+        li.appendChild(rel);
+      }
+
+      var previews = doc.createElement('ul');
+      previews.className = 'search-overlay__previews';
+      for (var s = 0; s < group.sections.length; s++) {
+        var section = group.sections[s];
+        var item = doc.createElement('li');
+        item.className = 'search-overlay__preview';
+
+        var link = doc.createElement('a');
+        link.className = 'search-overlay__result-section';
+        link.href = section.url;
+        var hasAnchor = String(section.url).indexOf('#') !== -1;
+        appendHighlighted(link, section.title || section.doc || section.url, tokens);
+        item.appendChild(link);
+
+        if (section.content) {
+          var snip = doc.createElement('span');
+          snip.className = 'search-overlay__result-snippet';
+          var sn = snippetFor(section.content, tokens, opts.preview_words_before, opts.preview_words_after);
+          var body = doc.createElement('span');
+          if (sn.lead) body.appendChild(doc.createTextNode('... '));
+          appendHighlighted(body, sn.text, tokens);
+          if (sn.trail) body.appendChild(doc.createTextNode(' ...'));
+          snip.appendChild(body);
+          item.appendChild(snip);
+        }
+        if (hasAnchor || section.title !== group.doc) previews.appendChild(item);
+      }
+      if (previews.children.length) li.appendChild(previews);
       list.appendChild(li);
     }
+  }
+
+  function searchOpts(cfg) {
+    var s = (cfg && cfg.search) || {};
+    function num(v, fallback) { return typeof v === 'number' ? v : fallback; }
+    return {
+      previews: num(s.previews, 3),
+      preview_words_before: num(s.preview_words_before, 5),
+      preview_words_after: num(s.preview_words_after, 10),
+      rel_url: s.rel_url !== false,
+      button: s.button === true,
+      focus_shortcut_key: s.focus_shortcut_key || 'k',
+      tokenizer_separator: s.tokenizer_separator || null,
+      heading_level: num(s.heading_level, 2),
+    };
   }
 
   function initSearch() {
@@ -429,6 +531,7 @@
     var overlay = doc.querySelector('.js-search-overlay');
     var openBtn = doc.querySelector('.js-search-open');
     if (!overlay || !openBtn) return;
+    var opts = searchOpts(cfg);
     var placeholder = searchCfg.placeholder || 'Search docs';
     var baseurl = searchCfg.baseurl || '';
 
@@ -461,8 +564,23 @@
       doc.body.classList.remove('modal-open');
     }
     function onInput() {
-      if (!searchIndex) { loadSearchIndex(baseurl).then(function () { renderSearchResults(input.value, list, meta, searchIndex); }); return; }
-      renderSearchResults(input.value, list, meta, searchIndex);
+      if (!searchIndex) {
+        loadSearchIndex(baseurl).then(function () { renderSearchResults(input.value, list, meta, searchIndex, opts); });
+        return;
+      }
+      renderSearchResults(input.value, list, meta, searchIndex, opts);
+    }
+
+    // JTD `search.button`: floating trigger in the lower right corner.
+    if (opts.button) {
+      var fab = doc.createElement('button');
+      fab.type = 'button';
+      fab.className = 'search-fab js-search-fab';
+      fab.setAttribute('aria-label', 'Search documentation');
+      fab.setAttribute('title', 'Search docs ( ' + opts.focus_shortcut_key + ' )');
+      fab.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>';
+      fab.addEventListener('click', open);
+      doc.body.appendChild(fab);
     }
 
     openBtn.addEventListener('click', open);
@@ -490,7 +608,14 @@
       }
     });
 
+    var shortcutKey = String(opts.focus_shortcut_key).toLowerCase();
     doc.addEventListener('keydown', function (e) {
+      // `search.focus_shortcut_key` (JTD): ctrl/cmd + key focuses search.
+      if ((e.ctrlKey || e.metaKey) && String(e.key || '').toLowerCase() === shortcutKey) {
+        e.preventDefault();
+        if (overlay.hidden) open();
+        return;
+      }
       if (e.key === '/' && overlay.hidden) {
         var tag = (doc.activeElement && doc.activeElement.tagName) || '';
         var typing = tag === 'INPUT' || tag === 'TEXTAREA' || (doc.activeElement && doc.activeElement.isContentEditable);

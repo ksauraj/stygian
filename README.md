@@ -33,16 +33,19 @@ Content engine
 - Just-the-docs compatible navigation: parents by page title,
   unlimited depth, `nav_order` as numbers or strings, `nav_sort`,
   `nav_exclude`, `has_toc`, automatic child lists on parent pages,
-  external nav links, `nav_enabled` global toggle
+  external nav links, `nav_enabled` global toggle, multi-collection
+  categories (`just_the_docs.collections`) with `nav_fold`
 - Breadcrumbs (Home / section / page) and prev/next page cards
-- Client-side search across the docs collection: header magnifier or `/`
-  shortcut, ranked results, `<mark>` highlights, snippets, arrow keys
+- Client-side search across pages and collections, split into sections
+  by `heading_level`: ranked results with per-section previews,
+  `<mark>` highlights, configurable word windows, `/` and `ctrl/cmd+k`
+  shortcuts, optional floating search button
 - Prose engine: buttons, labels and callouts with JTD class names,
   scrollable tables, code blocks with copy buttons and optional line
-  numbers, lazy theme-aware Mermaid, heading anchors
+  numbers, lazy theme-aware Mermaid, heading anchors, definition lists
 - "Edit this page on GitHub" links (native `stygian.edit` or JTD
   `gh_edit_link`)
-- Back-to-top button
+- Back-to-top button; print stylesheet
 
 Theming and motion
 
@@ -198,8 +201,26 @@ The demo site has its own `_config.demo.yml` so the theme root ships no
 `_config.yml`: consumers never inherit demo defaults (Jekyll merges a
 theme's `_config.yml` when present).
 
-Asset releases bump `?v=N` in `_includes/head.html` and
-`_includes/scripts.html`; see [CHANGELOG.md](CHANGELOG.md).
+Releases bump `lib/stygian/version.rb` and the matching `?v=` asset
+strings together, then tag `v<X.Y.Z>`; see
+[CHANGELOG.md](CHANGELOG.md) and the release section of
+[CONTRIBUTING.md](CONTRIBUTING.md).
+
+## Versioning
+
+Stygian follows SemVer, just-the-docs style: changes accumulate on
+`main` and are released as coherent milestones, not per-commit bumps.
+
+- `lib/stygian/version.rb` is the source of truth
+- the asset query strings (`?v=`) in the theme includes are tied to the
+  gem version (the spec suite fails the build if they drift)
+- every release gets a `v<X.Y.Z>` git tag and a CHANGELOG section;
+  tags are never rewritten
+- consumers on GitHub Pages pick the theme up on their next rebuild;
+  the versioned asset URLs bust the Pages CDN cache automatically
+
+See [CHANGELOG.md](CHANGELOG.md) and the release section of
+[CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 

@@ -153,8 +153,48 @@ the key or setting it to `false` - the monochrome treatment returns.
 The just-the-docs search keys work as aliases:
 
 ```yaml
-search_enabled: true   # alias for stygian.search.enabled
+search_enabled: true       # alias for stygian.search.enabled
+search:
+  heading_level: 2         # section-level indexing
+  previews: 3              # previews per result
+  preview_words_before: 5
+  preview_words_after: 10
+  rel_url: true
+  button: false            # floating search trigger
+  focus_shortcut_key: "k"  # ctrl/cmd + k opens search
+  tokenizer_separator: /[\s\-/]+/
 ```
+
+See [Search](search) for the full reference.
+
+## Document collections
+
+Multiple collections render as navigation categories, exactly like
+just-the-docs:
+
+```yaml
+collections:
+  docs:
+    output: true
+    permalink: /:collection/:path/
+  guides:
+    output: true
+    permalink: /:collection/:path/
+
+just_the_docs:
+  collections:
+    docs:
+      name: Docs
+    guides:
+      name: Guides
+      nav_fold: true        # collapsible category
+      # nav_exclude: true   # hide the whole collection from the nav
+      # search_exclude: true # keep it out of the search index
+```
+
+Regular pages (outside collections) render first, then the collections
+in config order. A single collection with no regular pages renders
+without a category label.
 
 ## Heading anchors
 

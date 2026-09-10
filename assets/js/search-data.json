@@ -1,17 +1,64 @@
 ---
-# Search index for the client-side search (search-data.json trick used by
-# just-the-docs: a Liquid-processed asset - no plugin needed, works on
-# GitHub Pages via remote_theme). Rendered per site at build time.
+# Search index for the client-side search. JTD-compatible: regular pages
+# plus every collection in `just_the_docs.collections` (per-collection
+# search_exclude honored; native sites use `stygian.nav.collection`). The
+# index is split into sections by headings up to `heading_level`
+# (default 2), so results can point at the exact heading.
 layout: null
 ---
-{%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
-{%- assign search_docs = site[collection_name] -%}
-{%- unless search_docs -%}{%- assign search_docs = '' | split: '' -%}{%- endunless -%}
+{%- assign heading_level = site.stygian.search.heading_level | default: site.search.heading_level | default: 2 -%}
+{%- assign pages_array = '' | split: '' -%}
+{%- assign pages_array = pages_array | push: site.html_pages -%}
+{%- if site.just_the_docs.collections -%}
+  {%- for entry in site.just_the_docs.collections -%}
+    {%- assign col_key = entry[0] -%}
+    {%- assign col_cfg = entry[1] -%}
+    {%- if col_cfg.search_exclude != true -%}
+      {%- assign col = site[col_key] -%}
+      {%- if col -%}{%- assign pages_array = pages_array | push: col -%}{%- endif -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- else -%}
+  {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+  {%- assign col = site[collection_name] -%}
+  {%- if col -%}{%- assign pages_array = pages_array | push: col -%}{%- endif -%}
+{%- endif -%}
 [
-{%- for doc in search_docs -%}
-{%- unless doc.search_exclude -%}
-  {"title":{{ doc.title | default: doc.name | jsonify }},"url":{{ doc.url | relative_url | jsonify }},"content":{{ doc.content | markdownify | replace: '</p>', ' ' | replace: '</li>', ' ' | replace: '</h1>', ' ' | replace: '</h2>', ' ' | replace: '</h3>', ' ' | replace: '</h4>', ' ' | replace: '<br />', ' ' | replace: '
-', ' ' | strip_html | jsonify }}}{% unless forloop.last %},{% endunless %}
-{%- endunless -%}
-{%- endfor -%}
+{%- assign first = true -%}
+{%- for pages in pages_array -%}
+  {%- for page in pages -%}
+    {%- if page.title and page.search_exclude != true -%}
+      {%- assign page_content = page.content -%}
+      {%- for j in (2..heading_level) -%}
+        {%- assign tag = '<h' | append: j -%}
+        {%- assign closing_tag = '</h' | append: j -%}
+        {%- assign page_content = page_content | replace: tag, '<h1' | replace: closing_tag, '</h1' -%}
+      {%- endfor -%}
+      {%- assign parts = page_content | split: '<h1' -%}
+      {%- assign title_found = false -%}
+      {%- for part in parts offset: 1 -%}
+        {%- assign title_and_content = part | split: '</h1>' -%}
+        {%- assign title = title_and_content[0] | replace_first: '>', '<h1>' | split: '<h1>' -%}
+        {%- assign title = title[1] | strip_html -%}
+        {%- assign content = title_and_content[1] -%}
+        {%- assign url = page.url -%}
+        {%- if title == page.title and parts[0] == '' -%}
+          {%- assign title_found = true -%}
+        {%- else -%}
+          {%- assign id = title_and_content[0] | split: 'id="' -%}
+          {%- if id.size == 2 -%}
+            {%- assign id = id[1] | split: '"' | first -%}
+            {%- assign url = url | append: '#' | append: id -%}
+          {%- endif -%}
+        {%- endif -%}
+{%- unless first -%},{%- endunless -%}{%- assign first = false -%}
+  {"doc":{{ page.title | jsonify }},"title":{{ title | jsonify }},"content":{{ content | replace: '</h', ' . </h' | replace: '<hr', ' . <hr' | replace: '</p', ' . </p' | replace: '<ul', ' . <ul' | replace: '</ul', ' . </ul' | replace: '<ol', ' . <ol' | replace: '</ol', ' . </ol' | replace: '</tr', ' . </tr' | replace: '<li', ' | <li' | replace: '</li', ' | </li' | replace: '</td', ' | </td' | replace: '<td', ' | <td' | replace: '</th', ' | </th' | replace: '<th', ' | <th' | strip_html | remove: 'Table of contents' | normalize_whitespace | replace: '. . .', '.' | replace: '. .', '.' | replace: '| |', '|' | append: ' ' | jsonify }},"url":{{ url | relative_url | jsonify }}}
+      {%- endfor -%}
+      {%- unless title_found -%}
+{%- unless first -%},{%- endunless -%}{%- assign first = false -%}
+  {"doc":{{ page.title | jsonify }},"title":{{ page.title | jsonify }},"content":{{ parts[0] | replace: '</h', ' . </h' | replace: '<hr', ' . <hr' | replace: '</p', ' . </p' | replace: '<ul', ' . <ul' | replace: '</ul', ' . </ul' | replace: '<ol', ' . <ol' | replace: '</ol', ' . </ol' | replace: '</tr', ' . </tr' | replace: '<li', ' | <li' | replace: '</li', ' | </li' | replace: '</td', ' | </td' | replace: '<td', ' | <td' | replace: '</th', ' | </th' | replace: '<th', ' | <th' | strip_html | remove: 'Table of contents' | normalize_whitespace | replace: '. . .', '.' | replace: '. .', '.' | replace: '| |', '|' | append: ' ' | jsonify }},"url":{{ page.url | relative_url | jsonify }}}
+      {%- endunless -%}
+    {%- endif -%}
+  {%- endfor -%}
+{%- endfor %}
 ]

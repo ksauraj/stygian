@@ -11,7 +11,35 @@ Legend:
 - **Fixed** - bug resolved
 - **Removed** - capability dropped
 
-## [Unreleased]
+## [0.2.0] - 2026-09-10
+
+### Added
+
+- **SemVer release process (just-the-docs style)**: changes accumulate
+  on `main` and ship as versioned milestones, not per-commit `?v=N`
+  bumps. `lib/stygian/version.rb` is the source of truth; the asset
+  query strings in `head.html` / `scripts.html` are tied to it and the
+  spec suite fails the build if they drift; releases get `v<X.Y.Z>`
+  git tags and CHANGELOG sections.
+- **Search parity with just-the-docs**: the index is split into
+  sections by `search.heading_level` (default 2) so results point at
+  the exact heading; `search.previews`, `search.preview_words_before` /
+  `preview_words_after` control result previews; `search.rel_url` shows
+  the relative url; `search.button` adds a floating search trigger;
+  `search.focus_shortcut_key` (default `k`) binds `ctrl/cmd+k`;
+  `search.tokenizer_separator` configures tokenization (default splits
+  hyphens, so `kube-system` matches `kube` and `system`).
+- **Multi-collection navigation**: `just_the_docs.collections` renders
+  each collection as a category (name hidden for a single category),
+  with `nav_fold` collapsible categories (expanded without JS),
+  per-collection `nav_exclude` and `search_exclude`; regular pages
+  render before collections, matching JTD.
+- **Utility matrix**: spacing (`.m-*`/`.p-*` on the JTD scale plus
+  auto), flex layout (`.d-flex`, `.flex-*` direction/justify/items/
+  sizing), vertical alignment (`.v-align-*`) and extra display helpers.
+- Definition list styling, a print stylesheet (hides chrome, expands
+  the content column, prints external link urls), and `layout: home`
+  as a JTD-compatible alias of `page`.
 
 ### Fixed
 
