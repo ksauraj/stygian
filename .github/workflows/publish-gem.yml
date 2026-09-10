@@ -22,7 +22,20 @@ jobs:
       - name: Build the gem
         run: gem build stygian.gemspec
 
+      - name: Check RubyGems credentials
+        id: creds
+        env:
+          GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
+        run: |
+          if [ -z "${GEM_HOST_API_KEY}" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "RUBYGEMS_API_KEY secret is not configured - gem publish skipped."
+          else
+            echo "skip=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish to RubyGems
+        if: steps.creds.outputs.skip != 'true'
         env:
           GEM_HOST_API_KEY: ${{ secrets.RUBYGEMS_API_KEY }}
         run: |
