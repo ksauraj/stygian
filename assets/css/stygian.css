@@ -1093,7 +1093,7 @@ html[data-highlighting='on'][data-theme='light'] .highlight .mh { color: #b35900
   display: inline-block;
   font-family: 'Space Mono', monospace;
   font-size: 0.72rem;
-  color: rgb(var(--color-muted-dark));
+  color: rgb(var(--color-muted));
   text-decoration: none;
   border: 1px solid rgb(var(--color-border));
   padding: 0.22rem 0.6rem;
@@ -1121,7 +1121,7 @@ body.modal-open { overflow: hidden; }
   margin-right: 0.3rem;
   border: 1px solid rgb(var(--color-border));
   background: transparent;
-  color: rgb(var(--color-muted-dark));
+  color: rgb(var(--color-muted));
   border-radius: 0.5rem;
   cursor: pointer;
   transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
@@ -1326,23 +1326,25 @@ body.modal-open { overflow: hidden; }
   max-width: none; overflow: visible;
   color: rgb(var(--color-fg)); background: rgb(var(--color-muted-dark) / 0.45);
 }
-.label-blue { color: #fff !important; background: #2c84fa !important; }
-.label-green { color: #fff !important; background: #41d693 !important; }
-.label-purple { color: #fff !important; background: #7253ed !important; }
-.label-yellow { color: #fff !important; background: #e7af06 !important; }
-.label-red { color: #fff !important; background: #f77e7e !important; }
-.label-grey { color: #fff !important; background: #959396 !important; }
-.label.label-yellow { color: #27262b !important; }
+.label-blue { color: #27262b !important; background: #2c84fa !important; }
+.label-green { color: #27262b !important; background: #41d693 !important; }
+.label-purple { color: #ffffff !important; background: #7253ed !important; }
+.label-yellow { color: #27262b !important; background: #e7af06 !important; }
+.label-red { color: #27262b !important; background: #f77e7e !important; }
+.label-grey { color: #27262b !important; background: #959396 !important; }
 
-/* buttons: JTD-compatible color variants + sizes */
-.btn-primary { background: rgb(var(--color-fg)); color: rgb(var(--color-bg)); border-color: transparent; }
-.btn-purple { background: #7253ed; color: #ffffff; border-color: transparent; }
-.btn-blue { background: #2c84fa; color: #ffffff; border-color: transparent; }
-.btn-green { background: #11b584; color: #ffffff; border-color: transparent; }
-.btn-red { background: #f77e7e; color: #27262b; border-color: transparent; }
-.btn-yellow { background: #f7d12e; color: #27262b; border-color: transparent; }
-.btn-outline { background: transparent; color: rgb(var(--color-fg)); border-color: rgb(var(--color-fg) / 0.4); }
-.btn-outline:hover { border-color: rgb(var(--color-fg)); }
+/* buttons: JTD-compatible color variants + sizes. Every variant lists
+   the prose-scoped selector too: .sty-prose a.btn (color: bg) would
+   otherwise override the variant text color, black-on-black in dark
+   mode. Text colors are picked by background luminance (WCAG-ish). */
+.btn-primary, .sty-prose a.btn-primary { background: rgb(var(--color-fg)); color: rgb(var(--color-bg)); border-color: transparent; }
+.btn-purple, .sty-prose a.btn-purple { background: #7253ed; color: #ffffff; border-color: transparent; }
+.btn-blue, .sty-prose a.btn-blue { background: #2c84fa; color: #27262b; border-color: transparent; }
+.btn-green, .sty-prose a.btn-green { background: #11b584; color: #27262b; border-color: transparent; }
+.btn-red, .sty-prose a.btn-red { background: #f77e7e; color: #27262b; border-color: transparent; }
+.btn-yellow, .sty-prose a.btn-yellow { background: #f7d12e; color: #27262b; border-color: transparent; }
+.btn-outline, .sty-prose a.btn-outline { background: transparent; color: rgb(var(--color-fg)); border-color: rgb(var(--color-fg) / 0.4); }
+.btn-outline:hover, .sty-prose a.btn-outline:hover { border-color: rgb(var(--color-fg)); }
 .btn-sm { padding: 0.35rem 0.9rem; font-size: 0.75rem; }
 .btn-xs { padding: 0.25rem 0.65rem; font-size: 0.6875rem; }
 
@@ -1479,8 +1481,8 @@ body.modal-open { overflow: hidden; }
    link rule (.sty-prose a.btn:hover) would otherwise win */
 .sty-prose a.btn-primary:hover { background: rgb(var(--color-fg)); color: rgb(var(--color-bg)); }
 .sty-prose a.btn-purple:hover { background: #7f5ff0; color: #ffffff; }
-.sty-prose a.btn-blue:hover { background: #4c94fa; color: #ffffff; }
-.sty-prose a.btn-green:hover { background: #2fc292; color: #ffffff; }
+.sty-prose a.btn-blue:hover { background: #4c94fa; color: #27262b; }
+.sty-prose a.btn-green:hover { background: #2fc292; color: #27262b; }
 .sty-prose a.btn-red:hover { background: #f88f8f; color: #27262b; }
 .sty-prose a.btn-yellow:hover { background: #f8da5c; color: #27262b; }
 .sty-prose a.btn-outline:hover { background: rgb(var(--color-fg) / 0.08); color: rgb(var(--color-fg)); }

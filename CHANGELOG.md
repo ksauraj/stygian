@@ -15,6 +15,23 @@ Legend:
 
 ### Fixed
 
+- Button text could be invisible: inside prose, `.sty-prose a.btn` (color:
+  bg) overrode the variant text colors, and `.btn-outline` is transparent
+  - black-on-black in dark mode. All button variants (`.btn-primary`,
+  `.btn-purple/blue/green/red/yellow`, `.btn-outline`) are now scoped to
+  prose as well; text colors picked by background luminance (dark text on
+  light fills, white on purple).
+- Labels: text color per background luminance (dark text on
+  blue/green/yellow/red/grey, white on purple) instead of white on
+  everything.
+- Low-contrast chrome: "Edit this page" link and the search icon now use
+  the muted color (4.6:1 on the dark background) instead of muted-dark
+  (2.2:1).
+
+## [0.1.2] - 2026-09-10
+
+### Fixed
+
 - Crash on sites without a `docs` collection: a page using the `docs`
   layout raised `Cannot sort a null object.` on the GitHub Pages build
   stack (Jekyll 3.10 / github-pages v232). Every collection touchpoint
