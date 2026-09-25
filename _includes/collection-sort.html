@@ -1,0 +1,26 @@
+{%- comment -%}
+  Collection sort. Parameters:
+    pages      - pages of one collection
+    collection - collection name (used to read its sort config)
+
+  Assigns: collection_sorted.
+
+  A collection opts into chronological ordering by setting
+  `just_the_docs.collections.<name>.sort_by: date` (posts are the usual case);
+  otherwise `stygian.nav.sort_by: date` applies to that collection too. Without
+  either, nav_order and title ordering apply as normal.
+
+  This exists because Jekyll gives every page a `date`, so date ordering cannot
+  be inferred from the data - the collection must declare it.
+{%- endcomment -%}
+{%- assign sort_by_date = false -%}
+{%- if include.collection and site.just_the_docs.collections[include.collection].sort_by == 'date' -%}
+  {%- assign sort_by_date = true -%}
+{%- elsif site.stygian.nav.sort_by == 'date' -%}
+  {%- assign sort_by_date = true -%}
+{%- endif -%}
+{%- assign collection_sorted = '' | split: '' -%}
+{%- if include.pages.size > 0 -%}
+  {%- include nav-sort.html pages=include.pages sort_by_date=sort_by_date -%}
+  {%- assign collection_sorted = nav_sorted -%}
+{%- endif -%}

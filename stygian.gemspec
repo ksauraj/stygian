@@ -25,6 +25,7 @@ Gem::Specification.new do |spec|
     "_layouts/**/*",
     "assets/**/*",
     "lib/**/*",
+    "feed.xml",
     "LICENSE",
     "README.md",
   ]

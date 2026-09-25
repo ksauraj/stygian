@@ -1,0 +1,60 @@
+---
+layout: null
+nav_exclude: true
+search_exclude: true
+sitemap: false
+---
+<?xml version="1.0" encoding="UTF-8"?>
+{%- comment -%}
+  RSS 2.0 feed, rendered to /feed.xml.
+
+  Sourced from the `posts` collection when one exists (the usual blog case);
+  otherwise from the sidebar collection, filtered to pages that carry a date.
+  Posts declaring `feed_exclude: true` are skipped either way.
+  Cap the item count with `stygian.feed.limit` (default 50).
+
+  This template ships in the theme so feeds work with no consumer code. A site
+  that does not want one simply sets `permalink: false` on feed.xml, or copies
+  and deletes the file.
+{%- endcomment -%}
+{%- assign items = '' | split: '' -%}
+{%- if site.posts and site.posts.size > 0 -%}
+  {%- for p in site.posts -%}
+    {%- if p.feed_exclude != true -%}{%- assign items = items | push: p -%}{%- endif -%}
+  {%- endfor -%}
+{%- else -%}
+  {%- assign default_name = site.stygian.nav.collection | default: 'docs' -%}
+  {%- assign pool = site[default_name] -%}
+  {%- unless pool -%}{%- assign pool = '' | split: '' -%}{%- endunless -%}
+  {%- for p in pool -%}
+    {%- if p.date != nil and p.feed_exclude != true -%}{%- assign items = items | push: p -%}{%- endif -%}
+  {%- endfor -%}
+{%- endif -%}
+{%- assign items = items | sort: 'date' | reverse -%}
+{%- assign limit = site.stygian.feed.limit | default: 50 -%}
+{%- assign count = items.size | at_most: limit -%}
+{%- assign latest = '' -%}
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ site.title | xml_escape }}</title>
+    {%- if site.description -%}<description>{{ site.description | xml_escape }}</description>{%- endif -%}
+    <link>{{ site.url }}{{ site.baseurl }}{{ site.stygian.feed.url | default: '/' }}</link>
+    <atom:link href="{{ site.url }}{{ site.baseurl }}/feed.xml" rel="self" type="application/rss+xml" />
+    <language>{{ site.lang | default: 'en' }}</language>
+    <generator>Jekyll v{{ jekyll.version }}</generator>
+    {%- for p in items -%}
+      {%- if forloop.index > count -%}{%- continue -%}{%- endif -%}
+      <item>
+        <title>{{ p.title | default: p.name | xml_escape }}</title>
+        <link>{{ site.url }}{{ site.baseurl }}{{ p.url }}</link>
+        <guid isPermaLink="true">{{ site.url }}{{ site.baseurl }}{{ p.url }}</guid>
+        <pubDate>{{ p.date | date: '%a, %d %b %Y %H:%M:%S %z' }}</pubDate>
+        {%- if p.excerpt %}<description>{{ p.excerpt | strip_html | xml_escape }}</description>{%- endif -%}
+        {%- if p.tags and p.tags.size > 0 -%}{%- for t in p.tags -%}<category>{{ t | xml_escape }}</category>{%- endfor -%}{%- endif -%}
+        {%- if forloop.index == 1 -%}{%- assign latest = p.date -%}{%- endif -%}
+      </item>
+    {%- endfor -%}
+    {%- if items.size > 0 -%}<lastBuildDate>{{ latest | date: '%a, %d %b %Y %H:%M:%S %z' }}</lastBuildDate>{%- endif -%}
+  </channel>
+</rss>
+

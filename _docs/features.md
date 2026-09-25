@@ -60,6 +60,23 @@ lede: >
 - Canonical URL built from `url` + `baseurl`
 - One switch: `stygian.seo.enabled: false`
 
+## Blog
+
+- Collections opt into date ordering with `just_the_docs.collections.<name>
+  .sort_by: date` (or `stygian.nav.sort_by: date` for the sidebar
+  collection); other collections keep normal `nav_order` ordering
+- `layout: blog` post pages on the docs shell: publish date as a `<time>`
+  element, excerpt as lede, tag chips, no breadcrumbs, no child TOC
+- `post: true` in front matter opts any page into post rendering from any
+  layout
+- `BlogPosting` JSON-LD on posts; docs pages keep `BreadcrumbList`
+- `_includes/post-list.html` newest-first dated archive with optional
+  `limit` and `collection` params
+- Copy-in `feed.xml` RSS 2.0 template sourcing `site.posts` (or the
+  sidebar collection), honoring `feed_exclude` and `stygian.feed.limit`
+- Prev/next resolves across all output collections, so a post can follow
+  a docs page
+
 ## Authoring ergonomics
 
 - Every rendered page has exactly one H1: the page title; a redundant

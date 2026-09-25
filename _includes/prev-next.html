@@ -3,14 +3,26 @@ Bottom "previous / next" navigation, flattened in navigation order:
 parents first (by nav_order), each followed immediately by its children.
 Sites without a docs collection render nothing (defensive: a nil
 collection must never crash the build).
+
+Pages live in every output collection, not only the sidebar's: a blog post
+is in `posts` while the sidebar's collection may be `docs`, so resolving
+prev/next from one collection would leave every post without paging. The
+default collection is added first to preserve its position in the ordering.
 {%- endcomment -%}
 {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
 {%- assign all_docs = site[collection_name] -%}
 {%- unless all_docs -%}{%- assign all_docs = '' | split: '' -%}{%- endunless -%}
+{%- for col in site.collections -%}
+  {%- unless col.label == collection_name -%}
+    {%- if site[col.label] and site[col.label].size > 0 -%}
+      {%- assign all_docs = all_docs | concat: site[col.label] -%}
+    {%- endif -%}
+  {%- endunless -%}
+{%- endfor -%}
 {%- assign all_docs = all_docs | where_exp: 'item', 'item.nav_exclude != true' -%}
 {%- unless all_docs -%}{%- assign all_docs = '' | split: '' -%}{%- endunless -%}
-{%- include nav-sort.html pages=all_docs -%}
-{%- assign all_docs = nav_sorted -%}
+{%- include collection-sort.html pages=all_docs collection=collection_name -%}
+{%- assign all_docs = collection_sorted -%}
 {%- assign flat = '' -%}
 {% for doc in all_docs %}
   {%- assign doc_key = doc.path | split: '/' | last | remove: '.md' -%}

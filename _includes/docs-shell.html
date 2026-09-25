@@ -8,6 +8,10 @@ Parents are resolved by TITLE first (just-the-docs), then by filename
 (stygian legacy). Pages with children render an automatic child table
 of contents unless `has_toc: false`.
 {%- endcomment -%}
+{%- comment -%} A page is a blog post if it declares `post: true` in front
+  matter or uses the blog layout. `post: true` also opts the page into the
+  default layout's docs-mode path, so the shell renders at all. {%- endcomment -%}
+{%- if page.post or page.layout == 'blog' -%}{%- assign is_post = true -%}{%- else -%}{%- assign is_post = false -%}{%- endif -%}
 {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
 {%- assign shell_docs = site[collection_name] -%}
 {%- unless shell_docs -%}{%- assign shell_docs = '' | split: '' -%}{%- endunless -%}
@@ -43,8 +47,8 @@ of contents unless `has_toc: false`.
     {%- unless c.nav_exclude -%}{%- assign page_children = page_children | push: c -%}{%- endunless -%}
   {%- endfor -%}
   {%- if page_children.size > 0 -%}
-    {%- include nav-sort.html pages=page_children -%}
-    {%- assign page_children = nav_sorted -%}
+    {%- include collection-sort.html pages=page_children collection=collection_name -%}
+    {%- assign page_children = collection_sorted -%}
   {%- endif -%}
 {%- endif -%}
 
@@ -98,15 +102,24 @@ of contents unless `has_toc: false`.
     <article>
       <header class="docs__title">
         <div class="docs__meta">
-          <nav class="crumbs" aria-label="Breadcrumb">
-            <ol class="crumbs__list">
-              <li class="crumbs__item"><a href="{{ site.baseurl }}/">Home</a></li>
-              {% if parent_doc %}
-                <li class="crumbs__item"><a href="{{ parent_doc.url | relative_url }}">{{ parent_doc.title }}</a></li>
-              {% endif %}
-              <li class="crumbs__item" aria-current="page">{{ page.title }}</li>
-            </ol>
-          </nav>
+          {%- comment -%} Posts show a post-meta line (date, reading time) and
+            an optional tags row instead of breadcrumbs. {%- endcomment -%}
+          {%- if is_post -%}
+            <div class="post-meta">
+              {%- if page.date -%}<time class="post-meta__date" datetime="{{ page.date | date: '%Y-%m-%d' }}">{{ page.date | date: '%B %-d, %Y' }}</time>{%- endif -%}
+              {%- if page.reading_time -%}<span class="post-meta__sep">|</span><span class="post-meta__rt">{{ page.reading_time }}</span>{%- endif -%}
+            </div>
+          {%- else -%}
+            <nav class="crumbs" aria-label="Breadcrumb">
+              <ol class="crumbs__list">
+                <li class="crumbs__item"><a href="{{ site.baseurl }}/">Home</a></li>
+                {% if parent_doc %}
+                  <li class="crumbs__item"><a href="{{ parent_doc.url | relative_url }}">{{ parent_doc.title }}</a></li>
+                {% endif %}
+                <li class="crumbs__item" aria-current="page">{{ page.title }}</li>
+              </ol>
+            </nav>
+          {%- endif -%}
           {%- assign edit = site.stygian.edit -%}
           {%- if edit.enabled and edit.repo -%}
             {%- assign ebranch = edit.branch | default: 'main' -%}
@@ -115,9 +128,18 @@ of contents unless `has_toc: false`.
           {%- endif -%}
         </div>
         <h1>{{ page.title }}</h1>
-        {% if page.lede %}<p class="lede">{{ page.lede }}</p>{% endif %}
+        {% if page.lede %}<p class="lede">{{ page.lede }}</p>
+        {% elsif is_post and page.excerpt %}<p class="lede">{{ page.excerpt }}</p>{% endif %}
+        {%- if is_post and page.tags and page.tags.size > 0 -%}
+          <div class="post-tags">
+            {%- for tag in page.tags -%}
+              <span class="post-tag">{{ tag }}</span>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
       </header>
       <div class="sty-prose">{{ prose_body }}</div>
+      {%- unless is_post -%}
       {%- if page_children.size > 0 -%}
         <nav class="docs__children" aria-label="Child pages">
           <h2 class="docs__children-title">Table of contents</h2>
@@ -128,7 +150,8 @@ of contents unless `has_toc: false`.
           </ul>
         </nav>
       {%- endif -%}
-      {%- if include.show_prev_next -%}
+      {%- endunless -%}
+      {%- if is_post or page.layout == 'docs' -%}
         {% include prev-next.html %}
       {%- endif -%}
     </article>
@@ -136,6 +159,27 @@ of contents unless `has_toc: false`.
 </div>
 
 {% if seo_enabled %}
+{%- if is_post -%}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ site.url }}{{ site.baseurl }}{{ page.url }}"
+  },
+  "headline": {{ page.title | jsonify }},
+{%- if page.date %}
+  "datePublished": "{{ page.date | date: '%Y-%m-%dT%H:%M:%S%z' }}",
+{%- endif -%}
+{%- if page.excerpt %}
+  "description": {{ page.excerpt | strip_html | jsonify }},
+{%- endif -%}
+  "inLanguage": "{{ site.lang | default: 'en' }}"{% if page.tags and page.tags.size > 0 %},
+  "keywords": "{%- for tag in page.tags -%}{{ tag }}{%- unless forloop.last -%}, {%- endunless -%}{%- endfor -%}"{% endif %}
+}
+</script>
+{%- else -%}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -162,4 +206,5 @@ of contents unless `has_toc: false`.
   ]
 }
 </script>
+{%- endif -%}
 {% endif %}
