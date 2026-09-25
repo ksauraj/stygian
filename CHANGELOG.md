@@ -11,6 +11,16 @@ Legend:
 - **Fixed** - bug resolved
 - **Removed** - capability dropped
 
+## [0.3.1] - 2026-09-25
+
+### Fixed
+
+- Blog post bodies rendered empty: `layout: blog` extended `default` with an
+  empty body, so `default` received an empty `content` and the docs shell
+  captured nothing. `blog` now includes the docs shell directly (so it
+  captures the markdown body like `layout: docs` does), and `default` skips
+  its own docs shell for blog posts so the shell is not rendered twice.
+
 ## [0.3.0] - 2026-09-24
 
 ### Added

@@ -12,9 +12,13 @@
     <main id="main">
       {%- if page.layout != 'docs' -%}
         {%- assign collection_name = site.stygian.nav.collection | default: 'docs' -%}
+        {%- assign is_blog = false -%}
+        {%- if page.post or page.layout == 'blog' -%}{%- assign is_blog = true -%}{%- endif -%}
         {%- assign docs_mode = false -%}
-        {%- if page.collection == collection_name -%}{%- assign docs_mode = true -%}{%- endif -%}
-        {%- if page.parent or page.grand_parent or page.nav_order or page.has_children or page.has_toc -%}{%- assign docs_mode = true -%}{%- endif -%}
+        {%- unless is_blog -%}
+          {%- if page.collection == collection_name -%}{%- assign docs_mode = true -%}{%- endif -%}
+          {%- if page.parent or page.grand_parent or page.nav_order or page.has_children or page.has_toc -%}{%- assign docs_mode = true -%}{%- endif -%}
+        {%- endunless -%}
         {%- if docs_mode -%}
           {%- include docs-shell.html show_prev_next=false -%}
         {%- else -%}

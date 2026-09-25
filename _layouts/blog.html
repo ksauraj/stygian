@@ -1,13 +1,10 @@
 ---
 # Blog - a markdown post with post meta (date, reading time, tags) plus
-# sidebar navigation and prev/next. Shares the docs shell so a blog site looks
-# like a docs site: same sidebar, same theme, same search.
-#
-# Differences from the docs layout are detected from `page.layout == 'blog'`
-# inside the docs shell, not from include parameters: a theme include can only
-# read its own parameters, and the default layout already includes the shell
-# once for docs-mode pages, so threading flags through a second include call
-# would render the shell twice and lose them. Layout name is always visible.
+# sidebar navigation and prev/next. Renders the docs shell directly so the
+# markdown body is captured as `content` (a layout that only extends default
+# with an empty body would hand `default` an empty `content` and lose the
+# post). The `default` layout recognizes blog posts and skips its own docs
+# shell so the shell is not rendered twice.
 #
 # Front matter:
 #   date:   2026-03-09        publish date; drives chronological nav + RSS
@@ -17,3 +14,4 @@
 #   feed_exclude: true        skip this post in the RSS feed
 layout: default
 ---
+{%- include docs-shell.html show_prev_next=true -%}

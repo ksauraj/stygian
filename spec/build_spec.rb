@@ -348,6 +348,9 @@ RSpec.describe "Stygian build" do
       expect(html).to include('class="post-tag">kubernetes</span>')
       expect(html).not_to include('aria-label="Breadcrumb"')
       expect(html).not_to include("docs__children")
+      # the markdown body must render (a regression: a blog layout that only
+      # extended default with an empty body handed default an empty content)
+      expect(html).to include("Body for Newest Post.")
     end
   end
 
