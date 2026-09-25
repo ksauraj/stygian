@@ -72,7 +72,7 @@ Legend: [x] shipped, [~] partial / planned, [ ] missing.
 | `layout: default` (sidebar + title H1 + child TOC) | same (docs-mode) | [x] |
 | `layout: minimal` (no sidebar) | same (`minimal` + `page`) | [x] |
 | `layout: home` | same (alias of page) | [x] |
-| `layout: post` (blog) | - | [ ] (out of scope: docs engine) |
+| `layout: post` (blog) | `layout: blog` + `sort_by: date` + `feed.xml` | [x] |
 
 ## Customization / hooks
 
@@ -114,10 +114,12 @@ and GA tracking (deliberately excluded).
   multi-collection navigation with `nav_fold`, spacing/flex/v-align
   utilities, definition lists, print stylesheet, `layout: home`,
   SemVer releases with tags (version.rb + `?v=` tied, spec-guarded).
-- **0.3.0**: config-driven custom callouts (`callouts:` colors/titles),
-  `search_placeholder_custom` / `toc_heading_custom` hooks, custom
-  color scheme authoring parity (`_sass/color_schemes` style via CSS
-  variables), `layout: post` for blog-style collections.
+- **0.3.0**: blog support delivered - `sort_by: date` collections,
+  `layout: blog` post pages, `_includes/post-list.html` archives and a
+  copy-in `feed.xml` RSS template. Remaining: config-driven custom
+  callouts (`callouts:` colors/titles), `search_placeholder_custom` /
+  `toc_heading_custom` hooks, custom color scheme authoring parity
+  (`_sass/color_schemes` style via CSS variables).
 - **0.4.0**: search result ranking parity (lunr-style phrase scoring),
   optional `ga_tracking` module, API-stability audit and
   `MIGRATION.md` per-release notes like just-the-docs.
