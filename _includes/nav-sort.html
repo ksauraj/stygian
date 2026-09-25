@@ -1,12 +1,30 @@
 {%- comment -%}
-  Navigation sort (JTD-compatible). Parameters: pages (array).
-  Assigns: nav_sorted.
+  Navigation sort (JTD-compatible). Parameters:
+    pages        - array of pages to order
+    sort_by_date - optional; when true, every page in the set is ordered by
+                   publish date instead of nav_order/title
 
-  Sibling ordering:
-  - explicit `nav_order` values first: numbers (int/float) before strings
-  - then pages without `nav_order`, ordered by `title` (numbers, then strings)
-  - string comparisons honor `nav_sort: case_insensitive`
-  - ties fall back to insertion order (stable enough for docs sites)
+  Ordering precedence:
+  1. If sort_by_date is true, the whole input sorts chronologically and FIRST,
+     newest first unless `stygian.nav.date_order: asc`.
+  2. Then explicit `nav_order` values: numbers (int/float) before strings.
+  3. Then pages without `nav_order`, ordered by `title` (numbers, then strings).
+  String comparisons honor `nav_sort: case_insensitive`; ties fall back to
+  insertion order (stable enough for docs sites).
+
+  Why an explicit opt-in rather than "sort pages that have a date": Jekyll
+  assigns a `date` to every page in every collection by default (the collection
+  scan time), so a `date != nil` test cannot separate blog posts from docs
+  pages. Collections therefore opt in individually, which is how a docs site
+  becomes a blog site without its reference docs reordering themselves.
+
+  Wiring: set `just_the_docs.collections.<name>.sort_by: date` to make that
+  collection date-ordered, or `stygian.nav.sort_by: date` to make the default
+  collection date-ordered. `stygian.nav.date_order: asc` flips newest-first
+  to oldest-first.
+
+  Constraint: `where_exp` cannot take a `|` inside its expression string, so
+  every derived split uses `group_by_exp` or a plain `sort`.
 
   Defensive: a nil or empty `pages` input yields an empty `nav_sorted`
   (a missing docs collection must never crash a consumer build - Jekyll's
@@ -14,14 +32,32 @@
 {%- endcomment -%}
 {%- assign nav_pages = include.pages -%}
 {%- unless nav_pages -%}{%- assign nav_pages = '' | split: '' -%}{%- endunless -%}
+{%- assign empty_array = '' | split: '' -%}
+{%- assign double_quote = '"' -%}
+
+{%- comment -%} Resolve the date-first flag: an explicit param wins, then the
+  site default. {%- endcomment -%}
+{%- assign date_first = include.sort_by_date -%}
+{%- if date_first == nil -%}
+  {%- assign date_first = site.stygian.nav.sort_by == 'date' -%}
+{%- endif -%}
+
+{%- assign date_key_pages = empty_array -%}
+{%- if date_first -%}
+  {%- comment -%} `sort: 'date'` compares publish dates chronologically
+    ascending regardless of whether they arrived as Date objects or strings.
+    Reverse for the blog default of newest first. {%- endcomment -%}
+  {%- assign date_key_pages = nav_pages | sort: 'date' -%}
+  {%- if site.stygian.nav.date_order != 'asc' -%}
+    {%- assign date_key_pages = date_key_pages | reverse -%}
+  {%- endif -%}
+  {%- assign nav_pages = empty_array -%}
+{%- endif -%}
 
 {%- assign nav_order_pages = nav_pages | where_exp: 'item', 'item.nav_order != nil' -%}
 {%- assign title_order_pages = nav_pages | where_exp: 'item', 'item.nav_order == nil' -%}
-{%- unless nav_order_pages -%}{%- assign nav_order_pages = '' | split: '' -%}{%- endunless -%}
-{%- unless title_order_pages -%}{%- assign title_order_pages = '' | split: '' -%}{%- endunless -%}
-
-{%- assign double_quote = '"' -%}
-{%- assign empty_array = '' | split: '' -%}
+{%- unless nav_order_pages -%}{%- assign nav_order_pages = empty_array -%}{%- endunless -%}
+{%- unless title_order_pages -%}{%- assign title_order_pages = empty_array -%}{%- endunless -%}
 
 {%- assign nav_string_pages = empty_array -%}
 {%- assign nav_number_pages = empty_array -%}
@@ -79,7 +115,8 @@
   {%- endif -%}
 {%- endif -%}
 
-{%- assign nav_sorted = nav_number_pages
+{%- assign nav_sorted = date_key_pages
+      | concat: nav_number_pages
       | concat: nav_string_pages
       | concat: title_number_pages
       | concat: title_string_pages -%}

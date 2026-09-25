@@ -45,8 +45,8 @@ Sidebar navigation. JTD-compatible:
         {%- assign col_parenthood = col_docs | group_by: 'parent' -%}
         {%- assign col_top = col_parenthood | where_exp: 'item', "item.name == ''" | map: 'items' | first -%}
         {%- unless col_top -%}{%- assign col_top = nav_empty -%}{%- endunless -%}
-        {%- include nav-sort.html pages=col_top -%}
-        {%- assign col_sorted = nav_sorted -%}
+        {%- include collection-sort.html pages=col_top collection=col_key -%}
+        {%- assign col_sorted = collection_sorted -%}
         {%- assign col_titles = col_top | map: 'title' -%}
         {%- assign col_name = col_cfg.name | default: col_key -%}
         {%- assign show_label = false -%}
@@ -85,7 +85,8 @@ Sidebar navigation. JTD-compatible:
     {%- assign nav_top_nodes = nav_top_nodes | where_exp: 'item', 'item.nav_exclude != true' -%}
     {%- unless nav_top_nodes -%}{%- assign nav_top_nodes = nav_empty -%}{%- endunless -%}
     {%- assign nav_top_node_titles = nav_top_nodes | map: 'title' -%}
-    {%- include nav-sort.html pages=nav_top_nodes -%}
+    {%- include collection-sort.html pages=nav_top_nodes collection=collection_name -%}
+    {%- assign nav_sorted = collection_sorted -%}
     <ul class="docs__nav-list">
       {%- assign nav_tree_pages = nav_sorted -%}
       {%- unless nav_tree_pages -%}{%- assign nav_tree_pages = nav_empty -%}{%- endunless -%}

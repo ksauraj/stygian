@@ -1,0 +1,46 @@
+{%- comment -%}
+  Post archive list. Renders the newest-first post list from the `posts`
+  collection (or the sidebar collection if there is no posts collection).
+
+  Parameters:
+    limit - max items to show (default: show all)
+    collection - collection name to read (default: posts)
+{%- endcomment -%}
+{%- assign items = '' | split: '' -%}
+{%- assign src = include.collection | default: 'posts' -%}
+{%- assign pool = site[src] -%}
+{%- unless pool -%}
+  {%- assign pool = site[site.stygian.nav.collection | default: 'docs'] -%}
+{%- endunless -%}
+{%- unless pool -%}{%- assign pool = '' | split: '' -%}{%- endunless -%}
+{%- for p in pool -%}
+  {%- if p.date != nil -%}{%- assign items = items | push: p -%}{%- endif -%}
+{%- endfor -%}
+{%- comment -%} Default to newest first; oldest first when the site opts
+  into it, so the archive always agrees with the sidebar. {%- endcomment -%}
+{%- assign items = items | sort: 'date' -%}
+{%- if site.stygian.nav.date_order != 'asc' -%}
+  {%- assign items = items | reverse -%}
+{%- endif -%}
+{%- if items.size > 0 -%}
+{%- assign cap = include.limit -%}
+{%- if cap and cap > 0 -%}{%- assign items = items | slice: 0, cap -%}{%- endif -%}
+<ul class="post-list">
+  {%- for p in items -%}
+  <li class="post-list__item">
+    <h2 class="post-list__title">
+      <a href="{{ p.url | relative_url }}">{{ p.title }}</a>
+    </h2>
+    {%- if p.excerpt %}<p class="post-list__excerpt">{{ p.excerpt | strip_html }}</p>{%- endif -%}
+    <div class="post-list__meta">
+      <time datetime="{{ p.date | date: '%Y-%m-%d' }}">{{ p.date | date: '%B %-d, %Y' }}</time>
+    </div>
+    {%- if p.tags and p.tags.size > 0 -%}
+    <div class="post-list__tags">
+      {%- for t in p.tags -%}<span class="post-tag">{{ t }}</span>{%- endfor -%}
+    </div>
+    {%- endif -%}
+  </li>
+  {%- endfor -%}
+</ul>
+{%- endif -%}

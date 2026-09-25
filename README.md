@@ -46,6 +46,10 @@ Content engine
 - "Edit this page on GitHub" links (native `stygian.edit` or JTD
   `gh_edit_link`)
 - Back-to-top button; print stylesheet
+- Blog mode: `sort_by: date` collections, `layout: blog` post pages with
+  date and tag chips, `_includes/post-list.html` archives, and a copy-in
+  `feed.xml` RSS template. Newest-first by default, `date_order: asc` for
+  changelogs. See the [Blog](docs/blog/) page.
 
 Theming and motion
 
@@ -58,7 +62,8 @@ Theming and motion
 
 SEO and publishing
 
-- Automatic WebSite + BreadcrumbList JSON-LD, Open Graph, Twitter card
+- Automatic WebSite + BreadcrumbList JSON-LD on docs pages, BlogPosting on
+  blog posts, Open Graph, Twitter card
 - Automatic description and canonical URL
 - Optional rouge syntax highlighting (`stygian.syntax_highlighting`)
 - Versioned assets so Pages deploys never serve stale CSS/JS

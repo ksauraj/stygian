@@ -11,6 +11,59 @@ Legend:
 - **Fixed** - bug resolved
 - **Removed** - capability dropped
 
+## [0.3.0] - 2026-09-24
+
+### Added
+
+- **Blog support**: turn the docs engine into a blog with chronological
+  posts, post metadata, an RSS feed and a dated archive, reusing the
+  sidebar, theme, search and prev/next of the docs engine.
+- **`sort_by: date` per collection** via `just_the_docs.collections.<name>
+  .sort_by: date`. Opted-in collections order by publish date, newest first,
+  so a collection of dated posts renders as a blog without disturbing the
+  `nav_order` ordering of any other collection. `stygian.nav.sort_by: date`
+  applies the same to the sidebar's default collection.
+- **`stygian.nav.date_order: asc`** flips an opted-in collection to oldest
+  first, for changelogs. Newest-first is the default.
+- **`layout: blog`**: a post page sharing the docs shell, with a publish date
+  as a `<time>` element, the excerpt as the lede, tag chips, no breadcrumbs
+  and no child table of contents. `post: true` in front matter does the same
+  from any layout, which is how you make a dated page outside `_posts` a post.
+- **`BlogPosting` JSON-LD** on blog posts, with `headline`, `datePublished`,
+  `description`, `keywords` and `mainEntityOfPage`. Docs pages keep
+  `BreadcrumbList`.
+- **`_includes/post-list.html`**: a newest-first dated index of posts with
+  titles, excerpts, dates and tag chips. `limit` and `collection` optional.
+- **`feed.xml`**: a copy-in RSS 2.0 template at the theme root, reading
+  `site.posts` when a posts collection exists and the sidebar collection
+  otherwise. Honors `feed_exclude: true` and `stygian.feed.limit`
+  (default 50). Ships in the gem.
+- **Prev/next across collections**: paging now resolves from every output
+  collection, not only the sidebar's, so a post can follow a docs page.
+- **Spec coverage** for date ordering, `date_order: asc`, post meta and
+  chips, `BlogPosting` vs `BreadcrumbList`, `feed_exclude`, feed ordering
+  and shipped files.
+
+### Fixed
+
+- A collection carrying a `date` but without `sort_by: date` could reorder
+  itself into newest-first order, because Jekyll assigns a default `date`
+  to every page in every collection. Ordering by date is now explicit and
+  per collection.
+- Includes could not reach their own parameters from a nested theme include,
+  which broke `show_prev_next` on `docs-shell.html` and made `layout: blog`
+  render as an ordinary docs page with breadcrumbs. The shell now detects
+  the post case from `page.layout`, which is always visible, instead of
+  threading a flag through a second include call.
+- `include` parameters do not survive a second include from a theme layout:
+  the docs layout rendered the shell without the caller's body, so archive
+  pages built with a dedicated listing layout came out empty. The theme no
+  longer ships a listing layout; a `layout: docs` page hosting
+  `_includes/post-list.html` renders the archive correctly.
+- `site.collections` entries expose the collection name as `label`, not
+  `name`. Prev/next iteration used the wrong key and silently saw no
+  collections.
+
 ## [0.2.0] - 2026-09-10
 
 ### Added
