@@ -351,6 +351,10 @@ RSpec.describe "Stygian build" do
       # the markdown body must render (a regression: a blog layout that only
       # extended default with an empty body handed default an empty content)
       expect(html).to include("Body for Newest Post.")
+      # a copy-link share button renders in the post meta
+      expect(html).to include('class="post-meta__share js-share-btn"')
+      expect(html).to include('aria-label="Copy link to this post"')
+      expect(html).to include('data-share-title="Newest Post"')
     end
   end
 
@@ -375,6 +379,8 @@ RSpec.describe "Stygian build" do
       types = ld_types(html).map { |j| j["@type"] }
       expect(types).to include("BreadcrumbList")
       expect(types).not_to include("BlogPosting")
+      # docs pages render no share button - it is a post-only affordance
+      expect(html).not_to include("post-meta__share")
     end
   end
 
