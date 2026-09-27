@@ -11,6 +11,15 @@ Legend:
 - **Fixed** - bug resolved
 - **Removed** - capability dropped
 
+## [0.3.2] - 2026-09-25
+
+### Added
+
+- **Share button on blog posts**: the post meta row gains a "Share" control
+  that copies the post link (native Web Share API on capable devices, with a
+  clipboard fallback). Renders only on blog posts, never on docs pages. The
+  label flips to "Copied" for a moment after copying.
+
 ## [0.3.1] - 2026-09-25
 
 ### Fixed

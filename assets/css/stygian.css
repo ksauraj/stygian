@@ -1783,6 +1783,33 @@ body.modal-open { overflow: hidden; }
 .post-meta__date { color: rgb(var(--color-muted)); }
 .post-meta__sep { color: rgb(var(--color-muted-dark)); }
 .post-meta__rt { color: rgb(var(--color-muted)); }
+.post-meta__share {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-left: auto;
+  padding: 0.18rem 0.6rem;
+  border: 1px solid rgb(var(--color-border));
+  border-radius: 0.375rem;
+  background: transparent;
+  color: rgb(var(--color-muted));
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.post-meta__share:hover,
+.post-meta__share:focus-visible {
+  color: rgb(var(--color-fg));
+  border-color: rgb(var(--color-fg));
+  outline: none;
+}
+.post-meta__share--copied {
+  color: rgb(var(--color-accent, 99 102 241));
+  border-color: rgb(var(--color-accent, 99 102 241));
+}
 
 .post-tags {
   display: flex;

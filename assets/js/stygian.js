@@ -211,6 +211,42 @@
   }
 
   /* ==================================================================
+   * SHARE BUTTONS (copy link / native share on blog posts)
+   * ================================================================== */
+
+  function initShareButtons() {
+    doc.querySelectorAll('.js-share-btn').forEach(function (btn) {
+      var label = btn.querySelector('.post-meta__share-label');
+      var original = label ? label.textContent : '';
+      var timer = null;
+
+      btn.addEventListener('click', function () {
+        var url = window.location.href;
+        var title = btn.getAttribute('data-share-title') || doc.title || '';
+        if (navigator.share) {
+          navigator.share({ title: title, url: url }).catch(function () {
+            copyLink(url, btn, label, original, timer);
+          });
+          return;
+        }
+        copyLink(url, btn, label, original, timer);
+      });
+    });
+  }
+
+  function copyLink(url, btn, label, original, timer) {
+    copyText(url, function () {
+      if (label) label.textContent = 'Copied';
+      btn.classList.add('post-meta__share--copied');
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (label) label.textContent = original;
+        btn.classList.remove('post-meta__share--copied');
+      }, 1600);
+    });
+  }
+
+  /* ==================================================================
    * TABLE WRAPPERS (horizontal scroll on small screens)
    * ================================================================== */
 
@@ -660,6 +696,7 @@
     initSearch();
     initBackToTop();
     initCopyButtons();
+    initShareButtons();
     initTableWrappers();
     initHeadingAnchors();
     initMermaid();
